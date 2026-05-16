@@ -1,0 +1,23 @@
+{
+  "name": "deckcraft",
+  "version": "0.1.0",
+  "description": "AI skill for generating beautiful technical presentation decks with Slidev",
+  "type": "module",
+  "license": "MIT",
+  "repository": "github.com/dnntrn/deckcraft",
+  "files": [
+    "skills/",
+    ".opencode/",
+    "AGENTS.md"
+  ],
+  "keywords": [
+    "slidev",
+    "presentations",
+    "slides",
+    "ai-skill",
+    "opencode",
+    "claude-code",
+    "cursor",
+    "deck"
+  ]
+}
