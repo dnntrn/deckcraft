@@ -274,6 +274,45 @@ Mermaid supports: `graph TD/LR`, `sequenceDiagram`, `stateDiagram-v2`, `classDia
 
 Use `{scale: 0.7}` or lower for complex diagrams to fit on screen.
 
+### Mermaid Auto-Scale Formula
+
+Always include `{scale: ...}` on Mermaid diagrams. Calculate scale from node count:
+
+```
+{scale: max(0.52, 1.0 - (node_count - 3) * 0.05)}
+```
+
+| Nodes | Scale | Result |
+|-------|-------|--------|
+| 3-4 | ~1.0 | Full size, very readable |
+| 5-6 | 0.85-0.90 | Comfortable |
+| 7-8 | 0.75-0.80 | Getting tight |
+| 9-10 | 0.65-0.70 | Manageable |
+| 11-12 | 0.55-0.60 | Minimum reasonable |
+| 13+ | 0.52 | Consider splitting diagram |
+
+For sequence diagrams, count participants as nodes. For state diagrams, count states + transitions visible.
+
+### Mermaid Custom Theme
+
+Each theme template (studio/nocturne) includes a `setup.ts` with `defineMermaidSetup`
+that configures Mermaid theme variables. This gives diagrams rich, theme-matching styling
+without inline configuration on every diagram.
+
+Themes use `theme: 'base'` and set all `themeVariables` to match the slide design.
+When generating a theme, copy the `setup.ts` file from the template — it already
+has the Mermaid configuration. No per-diagram theme directives needed.
+
+If you need to add per-diagram styling (rare), use the Mermaid init block:
+
+```md
+```mermaid {scale: 0.75}
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e'}}}%%
+graph TD
+    A --> B
+```
+```
+
 ### Mermaid with click steps
 
 Use `|` in Mermaid to control sequence diagram build steps:

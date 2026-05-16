@@ -24,9 +24,9 @@ All output follows the `deck/` convention at the project root:
 deck/
 ├── PRESENTATION.md     # Context: audience, tone, design system, anti-references
 ├── slides.md           # The deck in Slidev markdown (sli.dev)
-├── theme/              # Generated custom theme from design tokens
-│   ├── styles.css      # CSS custom properties + base styles
-│   └── layouts/        # Custom Vue layout components (if needed)
+├── theme/              # Copied theme template with injected tokens
+│   ├── styles.css      # Full theme stylesheet (customized from template)
+│   └── setup.ts        # Mermaid config + font loading
 ├── assets/             # Generated or placed images, diagrams, screenshots
 └── exports/            # PDF, PPTX, PNG output (gitignored)
 ```
@@ -38,27 +38,22 @@ You must have context. If `deck/PRESENTATION.md` is missing or stale, ask:
 1. **Audience** — Who is this for? What do they know? (SREs, frontend devs, execs, mixed)
 2. **Tone** — Authoritative, playful, academic, clinical, inspirational? Name three words.
 3. **Duration** — Lightning (5m), short (15m), standard (30m), deep dive (45-60m)
-4. **Design system** — "Use Kumo", "match Vercel", "like workers.cloudflare.com", or user-provided:
-   - URL to a design system page
-   - CSS variables / design tokens
-   - Explicit: "primary=#1a1a2e, secondary=#e94560, font=Inter"
-5. **Theme mode** — Dark or light? Default: dark for technical talks.
+4. **Design system** — "Use Kumo", "match Vercel", "MUI", or user-provided:
+   - Explicit values: "primary=#1a1a2e, secondary=#e94560, font=Inter, dark"
+5. **Theme** — `studio` (clean, universal, light/dark) or `nocturne` (dark, terminal aesthetic)
 6. **Anti-references** — What to avoid ("no stock photos", "no purple gradients", "no emoji titles")
 
 Write answers to `deck/PRESENTATION.md`. Never generate slides without this context.
 
-### Extracting Design Tokens
+### Generating the Theme (3-step, no scraping)
 
-See `references/design-systems.md` for the full extraction methodology. Summary:
+Do NOT scrape websites at runtime. Use pre-extracted token maps.
 
-1. Identify the design system (by name or URL)
-2. Extract: 6-10 color tokens, 3-5 typography steps, spacing scale
-3. Map tokens to Slidev CSS custom properties
-4. Generate `deck/theme/styles.css`
+1. **Read tokens** — `references/design-system-tokens.md` has pre-extracted colors, fonts, and style notes for Kumo, Vercel, MUI, and more. For custom design systems, derive from user-provided values.
+2. **Copy theme template** — Copy `themes/<chosen-theme>/` to `deck/theme/`. This includes `styles.css` (full design), `setup.ts` (fonts + Mermaid config).
+3. **Inject tokens** — Override the `:root { }` CSS variables in `deck/theme/styles.css` with the design system's colors. The theme template already has beautiful defaults; tokens personalize it.
 
-For known design systems the token locations are documented in the reference.
-For unknown systems, fetch and inspect the page/CSS for custom properties, theme configs, or design token files.
-For user-provided values, derive a full palette from the given anchors.
+Reference `slides.md` with `theme: ./theme` and slidev picks up the theme directory automatically.
 
 ## Core Slide Design Rules
 
@@ -143,7 +138,8 @@ Requires `playwright-chromium` dev dependency. Slides exported as rendered image
 
 | Topic | Reference File | When to Load |
 |-------|---------------|--------------|
-| Design system extraction | `references/design-systems.md` | Before generating theme |
+| Design system tokens | `references/design-system-tokens.md` | Before generating theme (do not scrape) |
+| Design system methodology | `references/design-systems.md` | Understanding token extraction |
 | Slidev syntax & features | `references/slidev.md` | Before generating slides |
 | Typography | `references/typography.md` | When typesetting slides |
 | Color | `references/color.md` | When choosing palette |
@@ -153,6 +149,7 @@ Requires `playwright-chromium` dev dependency. Slides exported as rendered image
 | Narrative structure | `references/narrative.md` | When organizing deck flow |
 | Anti-patterns | `references/anti-patterns.md` | After generating any slide |
 | Exporting | `references/export.md` | When exporting the deck |
+| Theme templates | `themes/studio/`, `themes/nocturne/` | Copy to `deck/theme/` before generating slides |
 
 ## Critical Rules
 

@@ -1,72 +1,17 @@
-# Extracting Design Tokens for Theme Generation
+# Design Token Extraction
 
-## Method: Extract from any design system
+> Pre-extracted token maps are in `references/design-system-tokens.md`. Read that file first.
+> This file covers methodology for custom systems and how tokens are mapped to themes.
 
-When the user names a design system (e.g. "use Kumo", "match Vercel"), extract its design tokens
-and map them to Slidev CSS custom properties in `deck/theme/styles.css`.
+## Never Scrape Websites at Runtime
 
-### Extraction process
+Do NOT fetch websites to extract design tokens. All runtime scraping has been removed.
+Reasons: network latency, enterprise firewall blocks, rate limiting, inconsistent results.
 
-1. **Identify the source** — URL, package name, or explicit user values
-2. **Extract tokens** — colors (6-10 tokens), typography (3-5 size steps), spacing scale, radius
-3. **Map to Slidev theme** — CSS custom properties in a standard format (see below)
-4. **Generate `deck/theme/styles.css`** — Write the file with extracted tokens
-5. **Reference in slides.md** — `theme: ./theme/styles.css` in frontmatter, or `@import`
-
-### Slidev theme format
-
-Generate `deck/theme/styles.css` with these custom properties:
-
-```css
-:root {
-  /* Surface colors */
-  --slidev-slide-background: /* surface color */;
-  --slidev-slide-foreground: /* text primary */;
-  --slidev-slide-muted: /* text secondary */;
-
-  /* Accent */
-  --slidev-accent: /* primary brand color */;
-  --slidev-accent-foreground: /* text on accent */;
-
-  /* Semantic */
-  --slidev-success: /* green */;
-  --slidev-warning: /* amber */;
-  --slidev-error: /* red */;
-  --slidev-info: /* blue */;
-
-  /* Typography */
-  --slidev-font-family: /* body font */;
-  --slidev-mono-family: /* code font */;
-  --slidev-font-size-base: 24px;
-  --slidev-font-size-code: 18px;
-  --slidev-line-height: 1.5;
-
-  /* Code blocks */
-  --slidev-code-background: /* slightly muted */;
-  --slidev-code-foreground: /* code text */;
-
-  /* Layout */
-  --slidev-spacing-unit: 8px;
-  --slidev-content-padding: 64px;
-
-  /* Misc */
-  --slidev-radius: /* border radius */;
-}
-```
-
-## Known Design System Shortcuts
-
-| System | Where to find tokens | Notes |
-|--------|---------------------|-------|
-| Kumo (Cloudflare) | `@cloudflare/kumo` package CSS custom properties, docs at kumo-ui.com/colors | Semantic color tokens, accessible defaults |
-| Vercel | Geist design system, vercel.com/design | Geist font family, monochrome + accent pattern |
-| MUI (Material) | `theme.palette`, `theme.typography` in MUI theme config | 13+ color tokens, 10+ typography variants |
-| Tailwind | User's `tailwind.config.js` or default config | Extract `colors`, `fontFamily`, `fontSize`, `spacing` |
-| shadcn/ui | CSS custom properties: `--background`, `--foreground`, `--primary`, etc. | Typically in `globals.css` or `app.css` |
-| Carbon (IBM) | `@carbon/themes` package, `@carbon/colors` | Enterprise-grade, accessible defaults |
-| GitHub Primer | `@primer/primitives` package | GitHub's design tokens |
-| Ant Design | `antd/es/theme` token system | Extensive token set |
-| Chakra UI | `extendTheme` config or default theme | Simple token structure |
+Instead:
+1. Read `references/design-system-tokens.md` for Kumo, Vercel, MUI, etc.
+2. For custom design systems, ask the user for explicit values
+3. For user-provided values, derive a full palette from anchors (see below)
 
 ## User-Provided Values
 
@@ -97,9 +42,9 @@ When the user provides explicit values instead of a system name:
 ### Handling a URL
 
 If user says "match our site at example.com":
-1. Note that you cannot fetch arbitrary URLs in all environments (enterprise constraints)
+1. Do NOT fetch the URL (enterprise constraints, network latency)
 2. Ask the user to paste relevant CSS custom properties or describe the palette
-3. If they provide a public design system URL (like vercel.com/design), use that
+3. If they provide explicit values, derive from those instead
 
 ## Color Strategy for Slides
 

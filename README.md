@@ -31,15 +31,17 @@ no commands to memorize, no design vocabulary required.
 - Generic stock photo filler
 - ...and more
 
-### Design system theming
+### Design system theming + rich theme templates
 
-Pick any design system and deckcraft generates a matching theme:
+Pick any design system and a theme template — deckcraft generates the full slide theme:
+- **studio** — Clean, universal. Swiss design. Light/dark. Works with any brand.
+- **nocturne** — Dark technical. Terminal aesthetic. Code-focused.
+
+Token maps pre-extracted for:
 - "Use Kumo" — Cloudflare's component library
 - "Match Vercel" — Geist design system
+- "Use MUI" — Material Design
 - "Use our brand: primary=#1a1a2e, font=Inter"
-- Tailwind, MUI, shadcn/ui, Carbon, GitHub Primer, and more
-
-No bundled themes. The AI extracts tokens and generates a custom theme.
 
 ### Zero commands (almost)
 

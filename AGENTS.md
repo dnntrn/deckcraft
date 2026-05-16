@@ -6,7 +6,9 @@ This repo uses the `deck/` convention for AI-generated presentation decks:
 deck/
 ├── PRESENTATION.md     # Context: audience, tone, design system, anti-references
 ├── slides.md           # The deck in Slidev markdown (sli.dev)
-├── theme/              # Generated custom theme (CSS + Vue layouts)
+├── theme/              # Copied theme template with injected tokens
+│   ├── styles.css      # Full theme stylesheet (customized from template)
+│   └── setup.ts        # Mermaid config + font loading
 ├── assets/             # Images, diagrams, screenshots
 └── exports/            # PDF/PPTX output (gitignored)
 ```
@@ -16,11 +18,17 @@ deck/
 Slidev (sli.dev) — Markdown with Vue. Code highlighting, Mermaid diagrams,
 two-column layouts, presenter notes. Exportable to PDF/PPTX/static site.
 
+### Theme templates
+
+Two bundled themes in `skills/deckcraft/themes/`:
+- **studio** — Clean, universal. Swiss design. Light/dark. Works with any brand.
+- **nocturne** — Dark technical. Terminal/editor aesthetic. Rich backgrounds.
+
 ### Design system theming
 
-The AI extracts design tokens from any public design system (Kumo, Vercel, MUI,
-Tailwind, shadcn, Carbon, etc.) or from user-provided values (primary color,
-font family, etc.) and generates a custom Slidev theme in `deck/theme/`.
+Design tokens are pre-extracted in `skills/deckcraft/references/design-system-tokens.md`
+for Kumo, Vercel, and MUI. No runtime scraping. The AI reads token maps, copies a theme
+template to `deck/theme/`, and injects tokens into the CSS variables.
 
 ### Creating a deck
 

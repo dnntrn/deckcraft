@@ -1,6 +1,6 @@
 {
   "name": "deckcraft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI skill for generating beautiful technical presentation decks with Slidev",
   "type": "module",
   "license": "MIT",
