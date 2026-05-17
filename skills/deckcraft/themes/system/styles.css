@@ -1,0 +1,32 @@
+/* System Theme — Invisible polish. Cool tones. All-purpose. */
+
+:root {
+  --c-canvas: oklch(98.5% 0 0);
+  --c-foreground: oklch(16% 0 0);
+  --c-muted: oklch(50% 0 0);
+  --c-border: oklch(88% 0 0);
+  --c-accent: oklch(55% 0.22 260);
+  --c-accent-dim: oklch(55% 0.22 260 / 0.06);
+  --c-accent-glow: oklch(55% 0.22 260 / 0.10);
+  --c-code-bg: oklch(94% 0 0);
+  --c-code-fg: oklch(18% 0 0);
+  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-canvas: oklch(16% 0.002 260);
+    --c-foreground: oklch(92% 0 0);
+    --c-muted: oklch(62% 0 0);
+    --c-border: oklch(28% 0 0);
+    --c-accent: oklch(65% 0.22 260);
+    --c-accent-dim: oklch(65% 0.22 260 / 0.06);
+    --c-accent-glow: oklch(65% 0.22 260 / 0.10);
+    --c-code-bg: oklch(22% 0.002 260);
+    --c-code-fg: oklch(90% 0 0);
+  }
+}
+
+.slidev-page { background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
+.slidev-layout { box-sizing: border-box; height: 100%; }

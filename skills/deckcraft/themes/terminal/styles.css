@@ -1,0 +1,41 @@
+/* Terminal Theme — Mono headings, bold accent. Systems, infrastructure, backend. */
+
+:root {
+  --c-canvas: oklch(96% 0 0);
+  --c-foreground: oklch(15% 0 0);
+  --c-muted: oklch(52% 0 0);
+  --c-border: oklch(86% 0 0);
+  --c-accent: oklch(55% 0.22 260);
+  --c-accent-dim: oklch(55% 0.22 260 / 0.08);
+  --c-accent-glow: oklch(55% 0.22 260 / 0.12);
+  --c-success: oklch(52% 0.16 155);
+  --c-warning: oklch(58% 0.16 80);
+  --c-danger: oklch(50% 0.19 25);
+  --c-code-bg: oklch(93% 0 0);
+  --c-code-fg: oklch(16% 0 0);
+  --c-code-dot-red: oklch(55% 0.18 20);
+  --c-code-dot-yellow: oklch(58% 0.16 85);
+  --c-code-dot-green: oklch(52% 0.14 150);
+  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-canvas: oklch(11% 0.003 260);
+    --c-foreground: oklch(94% 0 0);
+    --c-muted: oklch(64% 0 0);
+    --c-border: oklch(26% 0.003 260);
+    --c-accent: oklch(68% 0.22 260);
+    --c-accent-dim: oklch(68% 0.22 260 / 0.08);
+    --c-accent-glow: oklch(68% 0.22 260 / 0.15);
+    --c-success: oklch(68% 0.16 155);
+    --c-warning: oklch(68% 0.16 80);
+    --c-danger: oklch(58% 0.16 25);
+    --c-code-bg: oklch(16% 0.002 260);
+    --c-code-fg: oklch(90% 0 0);
+  }
+}
+
+.slidev-page { background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
+.slidev-layout { box-sizing: border-box; height: 100%; }

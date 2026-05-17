@@ -34,9 +34,11 @@ sequence diagrams, and before/after comparisons.
 
 ### Theme templates
 
-Two bundled themes in `skills/deckcraft/themes/`:
-- **studio** — Clean, universal. Swiss design. Light/dark.
-- **nocturne** — Dark technical. Terminal aesthetic. Code-focused.
+Four bundled themes in `skills/deckcraft/themes/`, all support light and dark mode:
+- **editorial** — Literary, refined. Serif headings (Playfair Display). Generous whitespace.
+- **terminal** — Technical, dense. Mono headings (JetBrains Mono). Bold accent.
+- **system** — Polished, invisible. Sans headings (Inter). All-purpose.
+- **blush** — Warm, feminine, sophisticated. Cormorant Garamond headings. Rounded corners.
 
 ### Design system tokens
 

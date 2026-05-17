@@ -1,0 +1,39 @@
+/* Blush Theme — Warm, soft, feminine. Rounded corners, rose accents, Cormorant headings. */
+
+:root {
+  --c-canvas: oklch(97% 0.005 20);
+  --c-foreground: oklch(16% 0.005 20);
+  --c-muted: oklch(52% 0.005 15);
+  --c-border: oklch(88% 0.004 20);
+  --c-accent: oklch(58% 0.14 15);
+  --c-accent-dim: oklch(58% 0.14 15 / 0.07);
+  --c-accent-glow: oklch(58% 0.14 15 / 0.12);
+  --c-success: oklch(55% 0.16 155);
+  --c-warning: oklch(60% 0.16 75);
+  --c-danger: oklch(50% 0.18 20);
+  --c-code-bg: oklch(94% 0.003 20);
+  --c-code-fg: oklch(18% 0.004 20);
+  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --c-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-canvas: oklch(14% 0.015 350);
+    --c-foreground: oklch(92% 0.005 20);
+    --c-muted: oklch(65% 0.008 350);
+    --c-border: oklch(30% 0.012 350);
+    --c-accent: oklch(68% 0.14 15);
+    --c-accent-dim: oklch(68% 0.14 15 / 0.08);
+    --c-accent-glow: oklch(68% 0.14 15 / 0.14);
+    --c-success: oklch(65% 0.14 155);
+    --c-warning: oklch(68% 0.14 75);
+    --c-danger: oklch(55% 0.16 20);
+    --c-code-bg: oklch(20% 0.012 350);
+    --c-code-fg: oklch(90% 0.004 20);
+  }
+}
+
+.slidev-page { background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
+.slidev-layout { box-sizing: border-box; height: 100%; }

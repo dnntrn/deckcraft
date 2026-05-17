@@ -71,7 +71,7 @@ Every question includes a `[default: ...]` option.
 
 4. **Design system or brand?** "Use Kumo", "match Vercel", "MUI", or provide values:
    "primary=#xxxxx, font=Inter" `[default: none, use theme defaults]`
-5. **Theme?** `studio` (clean universal, light/dark) or `nocturne` (dark technical) `[default: nocturne for tech talks, studio for business]`
+5. **Theme?** `editorial` (literary, serif), `terminal` (technical, mono), `system` (polished, universal), or `blush` (warm, feminine) `[default: terminal for tech talks, system for business]`
 6. **Anti-references?** What to avoid? "no stock photos", "not like Apple keynotes" `[default: no purple gradients, no stock photos, no emoji titles]`
 7. **Any specific analogies or mental models?** e.g. "explain useEffect like event listeners" `[default: anchor to what the audience already knows from CS fundamentals]`
 
@@ -92,11 +92,12 @@ Write a slide-by-slide outline. **STOP. Wait for the user to confirm or adjust b
 ### Step 4: Generate the deck
 
 1. **Load `references/content-design.md`** — Apply all 8 content patterns (motivate-then-mechanize, 3-pass structure, anchor to prior knowledge, code formula, progressive disclosure, pitfall sandwich, reinforcement slides, close the loop)
-2. Read `references/design-system-tokens.md` for pre-extracted tokens (never scrape websites)
-3. Copy chosen theme template from `themes/<theme>/` to `deck/theme/`
-4. Inject design system tokens into `deck/theme/styles.css` CSS variables
-5. Generate `deck/slides.md` using custom layouts (cover, content, impact, divider)
-6. Run the Slide Content Checklist from `references/content-design.md` against every slide
+2. **Load `references/capacity.md`** — Check content fits at 1920×1080. Split slides if they exceed limits. Never ship scrollbars.
+3. Read `references/design-system-tokens.md` for pre-extracted tokens (never scrape websites)
+4. Copy chosen theme template from `themes/<theme>/` to `deck/theme/`
+5. Inject design system tokens into `deck/theme/styles.css` CSS variables
+6. Generate `deck/slides.md` using custom layouts (cover, content, impact, divider)
+7. Run the Slide Content Checklist from `references/content-design.md` against every slide
 
 ### Step 5: Anti-pattern check
 
@@ -251,6 +252,8 @@ Requires `playwright-chromium` dev dependency.
 
 | Topic | Reference File | When to Load |
 |-------|---------------|--------------|
+| Slide capacity limits | `references/capacity.md` | Before generating slides |
+| Content design patterns | `references/content-design.md` | Before generating slides |
 | Design system tokens | `references/design-system-tokens.md` | Before generating theme |
 | Design system methodology | `references/design-systems.md` | Custom design systems |
 | HTML/CSS diagram patterns | `references/diagrams.md` | When adding diagrams |
@@ -261,7 +264,7 @@ Requires `playwright-chromium` dev dependency.
 | Narrative structure | `references/narrative.md` | When organizing deck flow |
 | Anti-patterns | `references/anti-patterns.md` | After generating any slide |
 | Exporting | `references/export.md` | When exporting the deck |
-| Theme templates | `themes/studio/`, `themes/nocturne/` | Copy to `deck/theme/` before slides |
+| Theme templates | `themes/editorial/`, `themes/terminal/`, `themes/system/`, `themes/blush/` | Copy to `deck/theme/` before slides |
 
 ## Critical Rules
 

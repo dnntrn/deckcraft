@@ -11,14 +11,13 @@ These make slides literally unusable. Block output until fixed.
   If a slide has this much text, split it into two slides or replace text with a diagram.
 - [ ] **Bullet hell** — More than 6 bullets on one slide, or bullets nested more than
   2 levels deep. Restructure into categorized groups or split slides.
-- [ ] **Tiny type** — Body text below 20px or code below 16px. Unreadable past the second row
-  in any room larger than a conference table.
+- [ ] **Tiny type** — Body text below 17px or code below 13px. Unreadable on projectors.
 - [ ] **Code without language tag** — A fenced code block without a language identifier
   (` ```python`, not bare ` ``` `). No highlighting means no one reads it.
 - [ ] **Missing presenter notes** — The `<!-- -->` HTML comment section is empty or absent.
   Every slide needs notes. Notes explain what to say, not what the slide already shows.
-- [ ] **Empty slide** — A slide with only a title and no content below it.
-  Either add content or merge with the next slide.
+- [ ] **Content overflows slide bounds** — Any content extends below 1080px or beyond 1920px.
+  Split the slide, use `.split` layout, or reduce code length. Never ship with scrollbars.
 
 ## P1 — Hurts Comprehension (strongly fix)
 
