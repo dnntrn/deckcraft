@@ -10,11 +10,11 @@ Don't add scrollbars. Don't reduce padding below theme defaults.
 |---|---|
 | Body text lines (title + body only) | 12 lines |
 | Body text + bullet list | 8 items, or 6 items with 2-level nesting |
-| Code lines (full width) | 20 lines (max-height: 420px at 14px font) |
-| Code lines (in .split, each column) | 16 lines (max-height: 320px at 14px font) |
-| Title + body + code | title + 5 body lines + 16 code lines |
-| Title + body + diagram | title + 4 body lines + diagram |
-| Table rows | 12 rows (at 14px font) |
+| Code lines (full width) | 16 lines (max-height: 380px at 13px font) |
+| Code lines (in .split, each column) | 12 lines (max-height: 280px at 13px font) |
+| Title + body + code | title + 3 body lines + 14 code lines |
+| Title + body + diagram | title + 3 body lines + diagram |
+| Table rows | 10 rows (at 13px font) |
 
 ## Grid and card limits
 
