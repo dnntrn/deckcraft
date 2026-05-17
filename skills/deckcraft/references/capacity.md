@@ -62,8 +62,16 @@ But prefer splitting complex code across slides rather than relying on scroll.
 
 ## Diagram sizing
 
-HTML/CSS diagrams should fit within the available content height.
-Use `margin: 20px 0` (not 40-48px) for diagrams on content-dense slides.
+HTML/CSS diagrams must fit within the available content height.
+Vertical flow diagrams use `max-height: 520px; overflow-y: auto`.
+Never use horizontal layout for 4+ nodes — it wraps and overflows.
+
+| Diagram type | Max nodes | Layout |
+|---|---|---|
+| Vertical flow | 8 nodes | `max-height: 520px; overflow-y: auto` |
+| State machine (horizontal) | 5 states | `flex-wrap: wrap` |
+| Feature grid (2-col) | 8 cards | Built-in `.grid-2` |
+| Comparison (before/after) | 2 boxes | Side by side |
 
 ## Testing for overflow
 

@@ -278,3 +278,4 @@ Requires `playwright-chromium` dev dependency.
 - All layouts are custom Vue components with scoped styles. Never use Slidev built-in layouts.
 - Always propose an outline before generating slides.
 - Use built-in `.grid-2` / `.grid-3` utilities for feature cards and grids. Never set custom `font-size` in grid scoped styles. Grid children use card-title (13px) and card-desc (12px).
+- Flow/process diagrams with 4+ nodes: use vertical layout (`.varch`, `flex-direction: column`, `max-height: 520px`). Horizontal layout wraps and overflows at 1920px.

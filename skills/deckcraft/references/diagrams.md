@@ -13,6 +13,8 @@ No Mermaid. No external rendering. Full visual control.
 
 ## Architecture / Flow Diagram
 
+Horizontal layout. Only use for 2-3 nodes. For 4+ nodes, use Vertical Architecture below.
+
 ```html
 <div class="arch">
   <div class="node accent">Client</div>
@@ -59,15 +61,19 @@ No Mermaid. No external rendering. Full visual control.
 
 ## Vertical Architecture (top-down)
 
+The default for process/flow diagrams. Use vertical for anything with more than 3 nodes — horizontal wraps and looks broken on projectors.
+
 ```html
 <div class="varch">
-  <div class="node accent">Client</div>
+  <div class="node accent">User says "use Kumo"</div>
   <span class="varrow">↓</span>
-  <div class="node">API Gateway</div>
+  <div class="node">AI reads token map</div>
   <span class="varrow">↓</span>
-  <div class="node">Service Layer</div>
+  <div class="node">AI copies theme template</div>
   <span class="varrow">↓</span>
-  <div class="node accent">Database</div>
+  <div class="node accent">AI injects tokens</div>
+  <span class="varrow">↓</span>
+  <div class="node accent">Rich themed slides</div>
 </div>
 
 <style scoped>
@@ -76,15 +82,32 @@ No Mermaid. No external rendering. Full visual control.
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin: 32px 0;
+  margin: 16px 0;
+  max-height: 520px;
+  overflow-y: auto;
 }
-.varrow {
-  color: var(--c-accent);
-  font-size: 20px;
-  line-height: 1;
+.node {
+  padding: 10px 22px;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  font-family: var(--c-mono);
+  font-size: 15px;
+  color: var(--c-foreground);
+  white-space: nowrap;
 }
+.accent { border-color: var(--c-accent); background: var(--c-accent-dim); color: var(--c-accent); font-weight: 600; }
+.varrow { color: var(--c-accent); font-size: 16px; line-height: 1; }
 </style>
 ```
+
+### Rule: vertical by default, horizontal only for 2-3 nodes
+
+| Nodes | Layout | Reason |
+|-------|--------|--------|
+| 2-3 | Horizontal or vertical | Either fits |
+| 4-5 | Vertical with ↓ arrows | Horizontal wraps, looks broken |
+| 6+ | Vertical with `max-height: 520px; overflow-y: auto` | Scrolls if needed |
 
 ## State Machine / Lifecycle
 

@@ -142,3 +142,36 @@
   font-size: 12px;
   color: var(--c-muted);
 }
+
+/* Built-in vertical flow diagram utility */
+
+.content-layout .vflow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 16px 0;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.content-layout .vflow > .node {
+  padding: 10px 22px;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  font-family: var(--c-mono);
+  font-size: 15px;
+  color: var(--c-foreground);
+  white-space: nowrap;
+}
+.content-layout .vflow > .node-accent {
+  border-color: var(--c-accent);
+  background: var(--c-accent-dim);
+  color: var(--c-accent);
+  font-weight: 600;
+}
+.content-layout .vflow > .varr {
+  color: var(--c-accent);
+  font-size: 16px;
+  line-height: 1;
+}
