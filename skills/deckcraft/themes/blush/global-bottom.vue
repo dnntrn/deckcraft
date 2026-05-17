@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { useNav } from '@slidev/client'
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, unref } from 'vue'
 
 const nav = useNav()
 
 const counter = computed(() => {
-  if (!nav || nav.total == null) return ''
-  return `${nav.currentPage + 1} / ${nav.total}`
+  if (!nav) return ''
+  const page = unref(nav.currentPage)
+  const total = unref(nav.total)
+  if (total == null || total === 0) return ''
+  return `${page + 1} / ${total}`
 })
 
 function handleKeydown(e: KeyboardEvent) {
