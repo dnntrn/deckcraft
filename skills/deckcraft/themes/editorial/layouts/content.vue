@@ -6,12 +6,11 @@
 
 <style>
 .content-layout {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   padding: 72px 80px 56px 80px;
-  position: relative;
   overflow: hidden;
   background: var(--c-canvas);
   box-sizing: border-box;

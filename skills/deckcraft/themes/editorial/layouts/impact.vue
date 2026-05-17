@@ -6,8 +6,8 @@
 
 <style>
 .impact-layout {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;

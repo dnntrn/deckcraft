@@ -6,12 +6,11 @@
 
 <style>
 .content-layout {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   padding: 60px 72px 52px 72px;
-  position: relative;
   overflow: hidden;
   background: var(--c-canvas);
   box-sizing: border-box;
@@ -90,7 +89,8 @@
   line-height: 1.55;
   font-style: italic;
 }
-.content-layout table { width: 100%; border-collapse: collapse; font-size: 16px; margin: 10px 0; }
+.content-layout table { position: absolute;
+  inset: 0; border-collapse: collapse; font-size: 16px; margin: 10px 0; }
 .content-layout thead { border-bottom: 1px solid var(--c-accent); }
 .content-layout th { text-align: left; font-weight: 600; color: var(--c-muted); padding: 8px 12px; font-family: var(--c-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
 .content-layout td { padding: 7px 12px; border-bottom: 1px solid var(--c-border); }

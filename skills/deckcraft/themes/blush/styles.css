@@ -37,5 +37,5 @@ html, body, #app { height: 100%; overflow: hidden; }
   }
 }
 
-.slidev-page { background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
-.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; }
+.slidev-page { position: relative; background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
+.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; position: relative; }
