@@ -9,7 +9,7 @@ const counter = computed(() => {
   const page = unref(nav.currentPage)
   const total = unref(nav.total)
   if (total == null || total === 0) return ''
-  return `${page + 1} / ${total}`
+  return `${page} / ${total}`
 })
 
 function handleKeydown(e: KeyboardEvent) {
