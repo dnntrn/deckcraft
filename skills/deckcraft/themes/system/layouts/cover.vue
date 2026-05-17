@@ -23,14 +23,14 @@
   pointer-events: none;
 }
 .cover-layout h1 {
-  font-size: 48px;
+  font-size: 40px;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.12;
-  margin: 0 0 14px 0;
+  margin: 0 0 12px 0;
   color: var(--c-accent);
   max-width: 860px;
 }
-.cover-layout p { font-size: 18px; line-height: 1.5; color: var(--c-muted); margin: 0 0 4px 0; }
-.cover-layout .author { margin-top: 32px; font-size: 14px; color: var(--c-muted); }
+.cover-layout p { font-size: 16px; line-height: 1.5; color: var(--c-muted); margin: 0 0 4px 0; }
+.cover-layout .author { margin-top: 24px; font-size: 13px; color: var(--c-muted); }
 </style>

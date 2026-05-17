@@ -25,21 +25,21 @@
   pointer-events: none;
 }
 .divider-layout h1 {
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.2;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   color: var(--c-accent);
 }
 .divider-layout h1::after {
   content: '';
   display: block;
-  width: 36px;
+  width: 30px;
   height: 2px;
   background: var(--c-accent);
-  margin: 14px auto 0;
+  margin: 12px auto 0;
 }
-.divider-layout h2 { font-size: 16px; font-weight: 400; color: var(--c-muted); margin: 0; }
-.divider-layout p { font-size: 16px; color: var(--c-muted); margin: 4px 0 0 0; }
+.divider-layout h2 { font-size: 14px; font-weight: 400; color: var(--c-muted); margin: 0; }
+.divider-layout p { font-size: 14px; color: var(--c-muted); margin: 3px 0 0 0; }
 </style>

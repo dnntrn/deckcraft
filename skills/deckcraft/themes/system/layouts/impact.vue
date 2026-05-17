@@ -25,13 +25,13 @@
   pointer-events: none;
 }
 .impact-layout h1 {
-  font-size: 52px;
+  font-size: 44px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: var(--c-accent);
 }
-.impact-layout p { font-size: 18px; color: var(--c-muted); margin: 0; }
-.impact-layout .text-sm { display: block; margin-top: 10px; font-size: 14px; color: var(--c-muted); }
+.impact-layout p { font-size: 16px; color: var(--c-muted); margin: 0; }
+.impact-layout .text-sm { display: block; margin-top: 8px; font-size: 13px; color: var(--c-muted); }
 </style>
