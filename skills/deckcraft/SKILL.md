@@ -36,7 +36,12 @@ deck/
 
 **Never synthesize PRESENTATION.md from a one-liner. Run a real interview.**
 
+The interview is non-negotiable. Do not fill in answers silently. Do not infer the full deck
+from the user's opening sentence and ask for a blanket confirmation. Every round must produce
+at least one real answer from the user before proceeding.
+
 Always offer a **default answer** for each question so the user can say "default" and move on.
+Skip any question whose answer is already clear from the user's prompt or previous answers.
 
 ### Step 1: Explore (if in a codebase)
 
@@ -48,7 +53,10 @@ If the user is in a project repo, quickly scan before asking:
 
 ### Step 2: Interview — 3 rounds, 2-3 questions each
 
-Pause after each round and wait for answers. Don't batch all questions at once.
+**Pause after each round and wait for answers.** Do not batch all rounds at once.
+Do not move to the next round until the user has responded. If the user says "default"
+to every question in a round, that's a valid response — proceed to the next round.
+
 Every question includes a `[default: ...]` option.
 
 #### Round 1 — Purpose & Audience
@@ -57,23 +65,29 @@ Every question includes a `[default: ...]` option.
 2. **Who's the audience?** What do they know? `[default: engineers with general knowledge]`
 3. **What should they do or remember after?** `[default: understand the key concepts]`
 
+**STOP. Wait for answers before Round 2.**
+
 #### Round 2 — Design & Tone
 
 4. **Design system or brand?** "Use Kumo", "match Vercel", "MUI", or provide values:
    "primary=#xxxxx, font=Inter" `[default: none, use theme defaults]`
 5. **Theme?** `studio` (clean universal, light/dark) or `nocturne` (dark technical) `[default: nocturne for tech talks, studio for business]`
 6. **Anti-references?** What to avoid? "no stock photos", "not like Apple keynotes" `[default: no purple gradients, no stock photos, no emoji titles]`
-7. **Any specific analogies or mental models to use?** e.g. "explain useEffect like event listeners" `[default: anchor to what the audience already knows from CS fundamentals]`
+7. **Any specific analogies or mental models?** e.g. "explain useEffect like event listeners" `[default: anchor to what the audience already knows from CS fundamentals]`
+
+**STOP. Wait for answers before Round 3.**
 
 #### Round 3 — Scope
 
-7. **Duration?** `[default: 30 minutes]`
-8. **Specific sections you want?** Any must-cover topics? `[default: none, propose a best-fit outline]`
-9. **Style preference?** Code-heavy, diagram-heavy, or narrative-heavy? `[default: balanced mix]`
+8. **Duration?** `[default: 30 minutes]`
+9. **Specific sections you want?** Any must-cover topics? `[default: none, propose a best-fit outline]`
+10. **Style preference?** Code-heavy, diagram-heavy, or narrative-heavy? `[default: balanced mix]`
+
+**STOP. Wait for answers before proposing outline.**
 
 ### Step 3: Propose outline
 
-Write a slide-by-slide outline. Wait for the user to confirm or adjust before writing any slides.
+Write a slide-by-slide outline. **STOP. Wait for the user to confirm or adjust before writing any slides.** Do not treat silence or "sounds good" as implicit approval — wait for an explicit green light.
 
 ### Step 4: Generate the deck
 
