@@ -63,6 +63,7 @@ Every question includes a `[default: ...]` option.
    "primary=#xxxxx, font=Inter" `[default: none, use theme defaults]`
 5. **Theme?** `studio` (clean universal, light/dark) or `nocturne` (dark technical) `[default: nocturne for tech talks, studio for business]`
 6. **Anti-references?** What to avoid? "no stock photos", "not like Apple keynotes" `[default: no purple gradients, no stock photos, no emoji titles]`
+7. **Any specific analogies or mental models to use?** e.g. "explain useEffect like event listeners" `[default: anchor to what the audience already knows from CS fundamentals]`
 
 #### Round 3 — Scope
 
@@ -76,10 +77,12 @@ Write a slide-by-slide outline. Wait for the user to confirm or adjust before wr
 
 ### Step 4: Generate the deck
 
-1. Read `references/design-system-tokens.md` for pre-extracted tokens (never scrape websites)
-2. Copy chosen theme template from `themes/<theme>/` to `deck/theme/`
-3. Inject design system tokens into `deck/theme/styles.css` CSS variables
-4. Generate `deck/slides.md` using custom layouts (cover, content, impact, divider)
+1. **Load `references/content-design.md`** — Apply all 8 content patterns (motivate-then-mechanize, 3-pass structure, anchor to prior knowledge, code formula, progressive disclosure, pitfall sandwich, reinforcement slides, close the loop)
+2. Read `references/design-system-tokens.md` for pre-extracted tokens (never scrape websites)
+3. Copy chosen theme template from `themes/<theme>/` to `deck/theme/`
+4. Inject design system tokens into `deck/theme/styles.css` CSS variables
+5. Generate `deck/slides.md` using custom layouts (cover, content, impact, divider)
+6. Run the Slide Content Checklist from `references/content-design.md` against every slide
 
 ### Step 5: Anti-pattern check
 
@@ -250,6 +253,7 @@ Requires `playwright-chromium` dev dependency.
 
 - Never skip the interview. Ask 2-3 questions per round, wait for answers.
 - Always offer a `[default: ...]` for every question.
+- Apply content-design patterns from `references/content-design.md` to every deck (motivate first, 3-pass structure, anchor to prior knowledge, pitfall sandwich).
 - Never scrape websites for design tokens. Read `references/design-system-tokens.md`.
 - Never use Mermaid. Use HTML/CSS diagrams with `<style scoped>`.
 - Never use `<v-clicks>` or `<v-click>` on body text. Text appears all at once.
