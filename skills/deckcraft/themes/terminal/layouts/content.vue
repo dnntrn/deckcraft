@@ -10,7 +10,7 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: 36px 48px 32px 48px;
+  padding: 36px 48px 44px 48px;
   overflow: hidden;
   background: var(--c-canvas);
   box-sizing: border-box;
