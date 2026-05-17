@@ -15,7 +15,9 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+html, body, #app { height: 100%; overflow: hidden; }
+
+:root {
     --c-canvas: oklch(14% 0.006 70);
     --c-foreground: oklch(91% 0.003 80);
     --c-muted: oklch(62% 0.002 80);
@@ -29,4 +31,4 @@
 }
 
 .slidev-page { background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
-.slidev-layout { box-sizing: border-box; height: 100%; }
+.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; }
