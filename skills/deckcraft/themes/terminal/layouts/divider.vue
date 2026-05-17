@@ -13,7 +13,7 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 48px;
+  padding: 40px;
   position: relative;
   overflow: hidden;
   background: var(--c-canvas);
@@ -27,22 +27,22 @@
 }
 .divider-layout h1 {
   font-family: var(--c-mono);
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   line-height: 1.15;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   color: var(--c-accent);
 }
 .divider-layout h1::after {
   content: '';
   display: block;
-  width: 40px;
+  width: 32px;
   height: 2px;
   background: var(--c-accent);
-  margin: 14px auto 0;
+  margin: 12px auto 0;
   opacity: 0.5;
 }
-.divider-layout h2 { font-size: 15px; font-weight: 400; color: var(--c-muted); margin: 0; }
-.divider-layout p { font-size: 15px; color: var(--c-muted); margin: 4px 0 0 0; }
+.divider-layout h2 { font-size: 14px; font-weight: 400; color: var(--c-muted); margin: 0; }
+.divider-layout p { font-size: 14px; color: var(--c-muted); margin: 3px 0 0 0; }
 </style>

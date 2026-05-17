@@ -1,5 +1,7 @@
 /* Terminal Theme — Mono headings, bold accent. Systems, infrastructure, backend. */
 
+html, body, #app { height: 100%; overflow: hidden; }
+
 :root {
   --c-canvas: oklch(96% 0 0);
   --c-foreground: oklch(15% 0 0);
@@ -38,4 +40,4 @@
 }
 
 .slidev-page { background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
-.slidev-layout { box-sizing: border-box; height: 100%; }
+.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; }
