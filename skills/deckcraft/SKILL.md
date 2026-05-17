@@ -277,3 +277,4 @@ Requires `playwright-chromium` dev dependency.
 - Code click-through highlighting (`{1-3|5|all}`) is fine.
 - All layouts are custom Vue components with scoped styles. Never use Slidev built-in layouts.
 - Always propose an outline before generating slides.
+- Use built-in `.grid-2` / `.grid-3` utilities for feature cards and grids. Never set custom `font-size` in grid scoped styles. Grid children use card-title (13px) and card-desc (12px).

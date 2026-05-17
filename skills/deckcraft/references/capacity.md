@@ -16,6 +16,29 @@ Don't add scrollbars. Don't reduce padding below theme defaults.
 | Title + body + diagram | title + 4 body lines + diagram |
 | Table rows | 12 rows (at 14px font) |
 
+## Grid and card limits
+
+Grids and feature cards are the #1 overflow source. These limits prevent overflow:
+
+| Grid pattern | Max | If exceeded |
+|---|---|---|
+| 1-column feature cards | 5 cards | Switch to 2-column grid |
+| 2-column feature cards | 8 cards (4 per column) | Split into two slides |
+| 3-column stat cards | 6 cards (2 rows) | Use 2-column instead |
+| Architecture diagram nodes | 6 nodes per row | Stack vertically or split |
+
+### Grid sizing rules (never override)
+
+- Card title: **13px**, bold, mono or sans
+- Card description: **12px**, muted
+- Card padding: **8px 12px** (never more)
+- Grid gap: **8px** (never more than 10px)
+- Card border-radius: inherits theme default
+
+Use these exact sizes in all `<style scoped>` grid blocks. Do not set
+`font-size: 14px` or `font-size: 16px` on grid children — it will overflow.
+These sizes are tested to fit at 1920×1080 with any theme's padding.
+
 ## When content overflows
 
 1. **Split the slide** — this is always the correct fix. Create two content slides from one.

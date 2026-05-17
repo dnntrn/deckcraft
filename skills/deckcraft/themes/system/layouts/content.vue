@@ -76,4 +76,36 @@
 .content-layout .split > * { overflow: hidden; min-width: 0; min-height: 0; }
 .content-layout .split pre { max-height: 300px; font-size: 12px; }
 .content-layout .split h1 { font-size: 24px; }
+
+/* Built-in grid utilities — use these, don't set custom font sizes in scoped styles */
+
+.content-layout .grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.content-layout .grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.content-layout .grid-2 > .card,
+.content-layout .grid-3 > .card {
+  padding: 8px 12px;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.content-layout .card-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--c-foreground);
+  margin-bottom: 2px;
+}
+.content-layout .card-desc {
+  font-size: 12px;
+  color: var(--c-muted);
+}
 </style>
