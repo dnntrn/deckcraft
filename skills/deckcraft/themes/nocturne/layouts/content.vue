@@ -8,13 +8,15 @@
 .content-layout {
   width: 100%;
   height: 100%;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 48px 60px 40px 60px;
   position: relative;
-  overflow-y: auto;
+  overflow-y: auto !important;
   overflow-x: hidden;
   background: var(--c-canvas);
+  box-sizing: border-box;
 }
 
 .content-layout::before {
