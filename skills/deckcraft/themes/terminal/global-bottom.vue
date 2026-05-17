@@ -1,12 +1,44 @@
 <script setup lang="ts">
 import { useNav } from '@slidev/client'
+import { computed, onMounted, onUnmounted } from 'vue'
+
 const nav = useNav()
+
+const counter = computed(() => {
+  if (!nav || nav.total == null) return ''
+  return `${nav.currentPage + 1} / ${nav.total}`
+})
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+  if (e.ctrlKey || e.metaKey || e.altKey) return
+
+  if (e.key === 'g' || e.key === 'G') {
+    e.preventDefault()
+    nav.toggleOverview()
+  }
+  if (e.key === 's' || e.key === 'S') {
+    e.preventDefault()
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))
+  }
+  if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault()
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      document.documentElement.requestFullscreen()
+    }
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
   <div class="deck-hints">
     <span class="hint-left">G Grid · S Search · F Fullscreen</span>
-    <span class="hint-right">{{ nav.currentPage + 1 }} / {{ nav.total }}</span>
+    <span class="hint-right" v-if="counter">{{ counter }}</span>
   </div>
 </template>
 
