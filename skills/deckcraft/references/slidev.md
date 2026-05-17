@@ -1,6 +1,6 @@
-# Slidev Syntax & Features
+# Slidev Syntax & Custom Layouts
 
-> Full docs at sli.dev. This reference covers the 80% of features used in 95% of technical presentations.
+> Full docs at sli.dev. This reference covers Slidev syntax plus deckcraft's custom layout system.
 
 ## File Format
 
@@ -8,136 +8,42 @@ Slidev slides are a single Markdown file with `---` as slide separators.
 
 ```md
 ---
-theme: ./theme/styles.css
+theme: ./theme
 highlighter: shiki
+lineNumbers: true
+title: My Talk
 ---
 
-# First Slide
-
-Content here. Separate slides with `---`.
-
+---
+layout: cover
 ---
 
-# Second Slide
+# Title
 
-Second slide content.
+Content.
 ```
 
 ## Frontmatter (Per-Deck)
 
-At the top of `slides.md`, between `---` fences:
-
 ```yaml
 ---
-theme: ./theme/styles.css        # Path to generated theme
-title: Kubernetes Pod Lifecycle  # Browser tab title
-highlighter: shiki               # shiki (default) or prism
-lineNumbers: true                # Show line numbers on code blocks
-drawings:
-  persist: false                 # Drawing annotations persist across slides?
-exportFilename: my-talk          # Base filename for exports
+theme: ./theme              # Path to theme directory
+title: My Talk              # Browser tab title
+highlighter: shiki          # Syntax highlighter
+lineNumbers: true           # Show line numbers
+exportFilename: my-talk     # Export filename base
 ---
 ```
 
-## Frontmatter (Per-Slide)
+## Deckcraft Custom Layouts
 
-Layout and behavior for individual slides:
+All layouts are custom Vue components in `theme/layouts/` with scoped styles.
+UnoCSS cannot touch scoped styles — no interference, no cut-off content.
+**Never use Slidev built-in layouts** (`default`, `two-cols`, `center`, `section`).
 
-```yaml
----
-layout: two-cols
-class: text-sm
----
-```
+### `layout: cover` — Opening slide
 
-### Common per-slide options
-
-| Option | Values | Effect |
-|--------|--------|--------|
-| `layout` | `default`, `two-cols`, `center`, `image-right`, `image-left`, `full`, `quote`, `statement`, `fact`, `cover`, `section`, `none` | Slide layout |
-| `class` | CSS class names | Additional styling |
-| `transition` | `fade`, `slide-left`, `slide-up`, `none` | Slide transition |
-| `clicks` | number | Number of click steps on this slide |
-| `clicksStart` | number | Offset for click animation numbering |
-
-## Layouts
-
-### `default` — Title + content
-Most common. Title at top, content below. Good for most technical slides.
-
-```md
----
-layout: default
----
-
-# The Problem
-
-Pod scheduling is slow at scale because...
-```
-
-### `two-cols` — Split view
-Two equal columns. Use `::right::` divider.
-
-```md
----
-layout: two-cols
----
-
-# Kubernetes API
-
-The API server is the front door to the control plane.
-
-::right::
-
-```python
-from kubernetes import client
-v1 = client.CoreV1Api()
-pods = v1.list_pod_for_all_namespaces()
-```
-```
-
-### `center` — Focused impact
-Centered content. Good for single statements, big numbers, calls to action.
-
-```md
----
-layout: center
----
-
-# 99.99%
-
-Uptime across all regions
-
-[Get started →](https://example.com)
-```
-
-### `section` — Topic transitions
-Centered section title. Use between major topic changes.
-
-```md
----
-layout: section
----
-
-# Part 2: Implementation
-```
-
-### `image-right` / `image-left`
-Content on one side, image on the other.
-
-```md
----
-layout: image-right
-image: ./assets/architecture.png
----
-
-# System Architecture
-
-The control plane runs in three zones.
-```
-
-### `cover` — Hero/opening slide
-Full-bleed opening. Large title, subtitle, author.
+Full-bleed opening. Large title, subtitle, optional author.
 
 ```md
 ---
@@ -146,237 +52,188 @@ layout: cover
 
 # Kubernetes Pod Lifecycle
 
-From Pending to Terminated
+What happens between `kubectl apply` and a running pod
 
-**Deanna • KubeCon 2026**
+**Deanna · KubeCon 2026**
 ```
 
-## Click Animations
+### `layout: content` — Default slide
 
-Reveal items one at a time during presentation.
-
-### Per-element: `<v-clicks>`
-
-```html
-<v-clicks>
-
-- First point appears
-- Second point appears
-- Third point appears
-
-</v-clicks>
-```
-
-### Per-item: `v-click`
+Title + body. The workhorse layout. 42px title with accent left-border (studio)
+or accent-colored title (nocturne). 22px body.
 
 ```md
-<v-click>
+---
+layout: content
+---
 
-This text appears on the first click.
+# The Problem
 
-</v-click>
-
-<v-click>
-
-This text appears on the second click.
-
-</v-click>
+Your text here. Bullet points, code blocks, tables — everything works.
 ```
 
-### Click counting
+### `layout: impact` — Big centered statement
+
+For statistics, key takeaways, or calls to action.
 
 ```md
-<div v-click="1">Appears on click 1</div>
-<div v-click="2">Appears on click 2</div>
-<div v-click="3">Appears on click 3</div>
+---
+layout: impact
+---
+
+# 3.2x
+
+Faster cold starts with lazy loading
+
+<span class="text-sm">vs v2.1 baseline · p99 across 10k deploys</span>
 ```
 
-### v-after (appears with previous)
+### `layout: divider` — Section transition
+
+Use between major topic changes. Centered, large type.
 
 ```md
-<div v-click>First item</div>
-<div v-after>Appears alongside first item</div>
+---
+layout: divider
+---
+
+# Part 2: The Solution
 ```
 
-## Code Features
+## Split Layout (code + explanation)
 
-### Syntax highlighting
-Always specify the language:
+Use the `.split` CSS class inside a `content` layout. Two equal columns.
 
 ```md
-```python {1-3|5|7-9|all}
-def schedule_pod(name, namespace):
-    pod = create_pod_spec(name)
-    # Lines 1-3 highlighted first
+---
+layout: content
+---
 
-    scheduler.assign_node(pod)
-    # Line 5 highlighted second
+<div class="split">
+<div>
 
-    api.create_namespaced_pod(
-        namespace=namespace,
-        body=pod
-    )
-    # Lines 7-9 highlighted third
-```
-```
+# Scheduling Loop
 
-Click through to highlight different lines as you explain them.
+The scheduler runs a continuous reconciliation loop:
 
-### Monaco Editor
-Interactive code editor for live demos:
+- Watch for unscheduled pods
+- Filter feasible nodes
+- Score and rank
+- Bind to best node
 
-```md
-```ts {monaco}
-function fibonacci(n: number): number {
-    if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
+</div>
+<div>
+
+```go {1-5|7-9|11-13}
+for {
+    pod := nextPod()
+    if pod == nil {
+        time.Sleep(1 * time.Second)
+        continue
+    }
+    nodes := feasibleNodes(pod)
+    bestNode := scoreNodes(nodes)
+    bindPod(pod, bestNode)
 }
 ```
+
+</div>
+</div>
 ```
 
-### Monaco Runner (execute code)
-```md
-```ts {monaco-run}
-console.log("Hello from the editor!");
-```
-```
+The `.split` class is defined in the `content.vue` layout's scoped styles.
+Left column: text. Right column: code.
 
-### TwoSlash (TypeScript type annotations)
-```md
-```ts twoslash
-const x = [1, 2, 3]
-//    ^?
-```
-```
+## Per-Slide Custom Styling
 
-### Code max-height
-Long code blocks with scroll:
-```
-```ts {maxHeight:'300px'}
-// Long code here
-```
-```
-
-## Diagrams
-
-### Mermaid (built-in)
-```md
-```mermaid {scale: 0.7}
-graph TD
-    A[User] --> B[API Server]
-    B --> C[Scheduler]
-    C --> D[Kubelet]
-    D --> E[Container Runtime]
-```
-```
-
-Mermaid supports: `graph TD/LR`, `sequenceDiagram`, `stateDiagram-v2`, `classDiagram`, `flowchart`, `gantt`, `pie`, `erDiagram`.
-
-Use `{scale: 0.7}` or lower for complex diagrams to fit on screen.
-
-### Mermaid Auto-Scale Formula
-
-Always include `{scale: ...}` on Mermaid diagrams. Calculate scale from node count:
-
-```
-{scale: max(0.52, 1.0 - (node_count - 3) * 0.05)}
-```
-
-| Nodes | Scale | Result |
-|-------|-------|--------|
-| 3-4 | ~1.0 | Full size, very readable |
-| 5-6 | 0.85-0.90 | Comfortable |
-| 7-8 | 0.75-0.80 | Getting tight |
-| 9-10 | 0.65-0.70 | Manageable |
-| 11-12 | 0.55-0.60 | Minimum reasonable |
-| 13+ | 0.52 | Consider splitting diagram |
-
-For sequence diagrams, count participants as nodes. For state diagrams, count states + transitions visible.
-
-### Mermaid Custom Theme
-
-Each theme template (studio/nocturne) includes a `setup.ts` with `defineMermaidSetup`
-that configures Mermaid theme variables. This gives diagrams rich, theme-matching styling
-without inline configuration on every diagram.
-
-Themes use `theme: 'base'` and set all `themeVariables` to match the slide design.
-When generating a theme, copy the `setup.ts` file from the template — it already
-has the Mermaid configuration. No per-diagram theme directives needed.
-
-If you need to add per-diagram styling (rare), use the Mermaid init block:
+Add `<style scoped>` at the bottom of any slide for one-off styles.
+These are scoped to the current slide — no global pollution.
 
 ```md
-```mermaid {scale: 0.75}
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1a1a2e'}}}%%
-graph TD
-    A --> B
-```
-```
+---
+layout: content
+---
 
-### Mermaid with click steps
+# Custom Layout
 
-Use `|` in Mermaid to control sequence diagram build steps:
+<div class="my-grid">
+  <div>Left content</div>
+  <div>Right content</div>
+</div>
 
-```md
-```mermaid {scale: 0.75}
-sequenceDiagram
-    participant U as User
-    participant A as API Server
-    participant S as Scheduler || Click 1
-    participant K as Kubelet || Click 2
-
-    U->>A: Create Pod
-    A->>S: Schedule Pod
-    S->>K: Bind Pod
-    K->>K: Start Container
-```
-```
-
-## Components
-
-Built-in Vue components for richer slides.
-
-### Tweet / YouTube embeds
-```md
-<Tweet id="1234567890" />
-<Youtube id="abc123" />
-```
-
-### Styling
-```md
-<style>
-h1 {
-  color: var(--slidev-accent);
+<style scoped>
+.my-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 24px;
 }
 </style>
 ```
 
-Scoped to the current slide by default.
+## Code Features
+
+### Syntax highlighting with click steps
+
+Always specify the language. Use `{lines}` for click-through highlighting.
+
+```jsx {1-3|5|7-9|all}
+function Counter() {
+  const [count, setCount] = useState(0)  // Lines 1-3 shown first
+
+  useEffect(() => {                       // Line 5 shown second
+    document.title = `Count: ${count}`
+  }, [count])
+
+  return (                                // Lines 7-9 shown third
+    <button onClick={() => setCount(count + 1)}>
+      Clicked {count} times
+    </button>
+  )
+}
+```
+
+### Code max-height (scrollable blocks)
+
+```go {maxHeight:'320px'}
+// Long code with scroll
+```
+
+### Inline code
+
+```md
+Use `useEffect` for side effects in React.
+```
 
 ## Presenter Notes
 
-HTML comments at the end of a slide become presenter notes (visible only in presenter mode):
+HTML comments at the end of a slide become presenter notes:
 
 ```md
 # My Slide
 
-Content visible to audience.
+Content the audience sees.
 
 <!--
-This is a presenter note. Only you see this.
-Explain the motivation behind this architecture choice.
-Mention that this pattern was adopted in Q3 2025.
+This is for you. Explain the motivation here.
+Mention the gotcha with cleanup functions.
+Spend 2 minutes on this slide — it's the key concept.
 -->
 ```
 
-Every slide must have presenter notes. Notes explain *what to say*, not *what's on the slide*.
+Every slide must have presenter notes. Notes explain *what to say*.
+
+## Click Animations
+
+- **NEVER use `<v-clicks>` or `<v-click>` on body text.** Text appears all at once.
+- **Code click-through highlighting is fine**: ```jsx {1-3|5|all}
+- With `{lines}` syntax, each pipe-separated group is a click step.
 
 ## Exporting
 
-See `references/export.md` for full export documentation.
+See `references/export.md` for PDF/PPTX/PNG export.
 
 ## Resources
 
-- Full docs: https://sli.dev
-- Theme gallery: https://sli.dev/resources/theme-gallery
-- Showcases: https://sli.dev/resources/showcases
+- Full Slidev docs: https://sli.dev
+- Deckcraft themes: see `themes/studio/` and `themes/nocturne/`

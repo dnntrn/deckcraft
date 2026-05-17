@@ -15,11 +15,13 @@ From Pending to Terminated — what actually happens
 **Deanna · KubeCon 2026**
 
 ---
-layout: section
+layout: divider
 ---
 
 # Part 1: The Problem
 
+---
+layout: content
 ---
 
 # Pod Scheduling at Scale
@@ -27,40 +29,36 @@ layout: section
 When you run `kubectl apply`, a lot happens before your container starts.
 Most of it is invisible, and most of it can fail silently.
 
-<v-clicks>
-
 - The API server validates and persists the Pod spec
 - The scheduler finds a node (or doesn't)
 - The kubelet pulls images and starts containers
 - Any step can fail without a clear signal
 
-</v-clicks>
-
 <!--
-This is the setup slide. We're establishing the problem space.
-Mention that most Kubernetes users have debugged a CrashLoopBackOff
-at 2am. That's what we're going to fix.
+Setup slide. Establish the problem space.
+Mention debugging CrashLoopBackOff at 2am.
 -->
 
 ---
-layout: two-cols
+layout: content
 ---
 
 # The Scheduling Loop
 
-The scheduler runs a continuous reconciliation loop.
-It watches for unscheduled pods and assigns them to nodes.
+<div class="split">
+<div>
 
-<v-click>
+The scheduler runs a continuous reconciliation loop — not a one-shot operation.
 
-1. Watch for `Pod.spec.nodeName == ""`
+1. Watch for unscheduled pods
 2. Filter feasible nodes
 3. Score and rank candidates
 4. Bind pod to best node
 
-</v-click>
+This loop runs forever. Pods can be rescheduled after node failure.
 
-::right::
+</div>
+<div>
 
 ```go {1-5|7-9|11-13}
 // The main scheduling loop
@@ -73,41 +71,87 @@ for {
 
     nodes := feasibleNodes(pod)
     bestNode := scoreNodes(nodes)
-
     bindPod(pod, bestNode)
 }
 ```
 
+</div>
+</div>
+
 <!--
-Walk through this slowly. The loop structure is the key insight
-most people miss — it's a continuous loop, not a one-shot operation.
+Walk through the loop structure.
+The key insight: it's continuous, not one-shot.
+This is why pods recover after node failure.
 -->
 
 ---
-layout: default
+layout: content
+---
+
+# System Architecture
+
+<div class="arch">
+  <div class="node accent">Client</div>
+  <span class="arrow">→</span>
+  <div class="node">API Server</div>
+  <span class="arrow">→</span>
+  <div class="node accent">Scheduler</div>
+  <span class="arrow">→</span>
+  <div class="node">Kubelet</div>
+</div>
+
+<p class="text-sm" style="margin-top:36px;text-align:center">
+  The scheduler is the decision engine. Everything flows through it.
+</p>
+
+<style scoped>
+.arch { display: flex; align-items: center; gap: 12px; justify-content: center; margin: 48px 0; flex-wrap: wrap; }
+.node { padding: 16px 24px; background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: 8px; font-family: var(--c-mono); font-size: 18px; color: var(--c-foreground); }
+.accent { border-color: var(--c-accent); background: var(--c-accent-dim); color: var(--c-accent); font-weight: 600; }
+.arrow { color: var(--c-accent); font-size: 22px; font-weight: bold; }
+</style>
+
+<!--
+The architecture diagram replaces what would have been a Mermaid render.
+HTML/CSS means full control over every visual detail.
+-->
+
+---
+layout: content
 ---
 
 # Pod State Machine
 
-```mermaid {scale: 0.82}
-stateDiagram-v2
-    [*] --> Pending
-    Pending --> Running : Scheduled
-    Running --> Succeeded : Completed
-    Running --> Failed : Error
-    Pending --> Failed : Unschedulable
-    Succeeded --> [*]
-    Failed --> [*]
-```
+<div class="states">
+  <div class="state">Pending</div>
+  <span class="st-arrow">→ Scheduled →</span>
+  <div class="state accent">Running</div>
+  <span class="st-arrow">→ Complete →</span>
+  <div class="state">Succeeded</div>
+</div>
+
+<div class="states" style="margin-top:16px">
+  <span class="st-note">On error:</span>
+  <span class="st-arrow"></span>
+  <div class="state danger">Failed</div>
+</div>
+
+<style scoped>
+.states { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.state { padding: 14px 24px; background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: 8px; font-family: var(--c-mono); font-size: 17px; color: var(--c-foreground); }
+.accent { border-color: var(--c-accent); background: var(--c-accent-dim); color: var(--c-accent); font-weight: 600; }
+.danger { border-color: var(--c-danger); background: var(--c-accent-dim); color: var(--c-danger); }
+.st-arrow { color: var(--c-accent); font-size: 14px; }
+.st-note { font-size: 14px; color: var(--c-muted); font-style: italic; margin-right: 6px; }
+</style>
 
 <!--
-Walk through each state. Emphasize that Pending is the only phase
-where scheduling decisions happen. Once Running, the pod stays
-Running until it exits or fails.
+State machine in HTML/CSS. More visual control than Mermaid.
+Each state is a styled div with accent highlighting on key transitions.
 -->
 
 ---
-layout: center
+layout: impact
 ---
 
 # 3.2x
@@ -117,27 +161,22 @@ Faster cold starts with lazy module loading
 <span class="text-sm">vs v2.1 baseline · p99 across 10k deploys</span>
 
 ---
-layout: section
+layout: divider
 ---
 
 # Part 2: The Solution
 
 ---
-layout: default
+layout: content
 ---
 
 # Next Steps
 
-<v-clicks>
-
 - Try this pattern in your own cluster: `kubectl apply -f example.yaml`
 - Read the full proposal: [github.com/kubernetes/enhancements](https://github.com/kubernetes/enhancements)
 - Join the SIG scheduling meeting: **Thursdays at 10am PT**
-- Questions? Find me at the hallway track or open an issue
-
-</v-clicks>
+- Questions? Find me at the hallway track
 
 <!--
-End with a clear call to action. Don't let the talk fade out.
-Give people something to do tomorrow.
+End with clear actions. Give people something to do tomorrow.
 -->

@@ -1,408 +1,44 @@
-/* Studio Theme — Clean, Universal, Swiss Design */
-
-/* ============================================
-   CSS Custom Properties (override per brand)
-   ============================================ */
+/* Studio Theme — CSS variables + minimal reset only.
+   All slide styling is in scoped Vue layout components. */
 
 :root {
-  /* Canvas — warm paper or deep charcoal */
-  --slidev-canvas: oklch(98.5% 0.001 90);
-  --slidev-foreground: oklch(15% 0.005 260);
-  --slidev-muted: oklch(48% 0 0);
-  --slidev-border: oklch(88% 0 0);
-  --slidev-accent: oklch(58% 0.22 260);
-  --slidev-accent-dim: oklch(58% 0.22 260 / 0.12);
+  --c-canvas: oklch(98.5% 0.001 90);
+  --c-foreground: oklch(15% 0.005 260);
+  --c-muted: oklch(48% 0 0);
+  --c-border: oklch(88% 0 0);
+  --c-accent: oklch(58% 0.22 260);
+  --c-accent-dim: oklch(58% 0.22 260 / 0.08);
+  --c-accent-glow: oklch(58% 0.22 260 / 0.15);
 
-  /* Code */
-  --slidev-code-bg: oklch(95% 0.002 260);
-  --slidev-code-fg: oklch(18% 0.005 260);
-  --slidev-code-radius: 12px;
+  --c-code-bg: oklch(95% 0.002 260);
+  --c-code-fg: oklch(18% 0.005 260);
 
-  /* Mermaid */
-  --slidev-mermaid-node: oklch(97% 0.001 260);
-  --slidev-mermaid-node-border: oklch(84% 0.003 260);
-  --slidev-mermaid-label: oklch(15% 0.005 260);
-  --slidev-mermaid-edge: oklch(55% 0 0);
-  --slidev-mermaid-font: 15px;
-
-  /* Layout */
-  --slidev-padding: 80px;
-  --slidev-title-size: 56px;
-  --slidev-body-size: 26px;
-  --slidev-code-size: 18px;
-  --slidev-line-height: 1.55;
-
-  /* Typography */
-  --slidev-font: 'Inter', system-ui, -apple-system, sans-serif;
-  --slidev-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --slidev-display: 'Playfair Display', Georgia, serif;
+  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
-
-/* ============================================
-   Dark Mode
-   ============================================ */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --slidev-canvas: oklch(16% 0.005 260);
-    --slidev-foreground: oklch(93% 0 0);
-    --slidev-muted: oklch(62% 0 0);
-    --slidev-border: oklch(28% 0 0);
-    --slidev-accent: oklch(68% 0.22 260);
-    --slidev-accent-dim: oklch(68% 0.22 260 / 0.10);
-    --slidev-code-bg: oklch(22% 0.005 260);
-    --slidev-code-fg: oklch(92% 0 0);
-    --slidev-mermaid-node: oklch(22% 0.005 260);
-    --slidev-mermaid-node-border: oklch(36% 0 0);
-    --slidev-mermaid-label: oklch(93% 0 0);
-    --slidev-mermaid-edge: oklch(50% 0 0);
+    --c-canvas: oklch(16% 0.005 260);
+    --c-foreground: oklch(93% 0 0);
+    --c-muted: oklch(62% 0 0);
+    --c-border: oklch(28% 0 0);
+    --c-accent: oklch(68% 0.22 260);
+    --c-accent-dim: oklch(68% 0.22 260 / 0.08);
+    --c-accent-glow: oklch(68% 0.22 260 / 0.15);
+    --c-code-bg: oklch(22% 0.005 260);
+    --c-code-fg: oklch(92% 0 0);
   }
 }
 
-/* ============================================
-   Global
-   ============================================ */
-
+/* Global reset — don't let UnoCSS win */
 .slidev-page {
-  background: var(--slidev-canvas);
-  color: var(--slidev-foreground);
-  font-family: var(--slidev-font);
-  font-size: var(--slidev-body-size);
-  line-height: var(--slidev-line-height);
+  background: var(--c-canvas);
+  color: var(--c-foreground);
+  font-family: var(--c-font);
   -webkit-font-smoothing: antialiased;
 }
 
 .slidev-layout {
-  padding: var(--slidev-padding);
-  height: 100%;
-}
-
-/* ============================================
-   Typography
-   ============================================ */
-
-h1 {
-  font-size: var(--slidev-title-size);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin: 0 0 24px 0;
-  padding-left: 28px;
-  border-left: 4px solid var(--slidev-accent);
-  color: var(--slidev-foreground);
-}
-
-h2 {
-  font-size: calc(var(--slidev-title-size) * 0.72);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  margin: 0 0 18px 0;
-  color: var(--slidev-foreground);
-}
-
-h3 {
-  font-size: calc(var(--slidev-title-size) * 0.55);
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: var(--slidev-muted);
-}
-
-p {
-  margin: 0 0 16px 0;
-  max-width: 75ch;
-}
-
-ul, ol {
-  padding-left: 1.5em;
-  margin: 0 0 16px 0;
-  max-width: 70ch;
-}
-
-li {
-  margin-bottom: 8px;
-}
-
-li:last-child {
-  margin-bottom: 0;
-}
-
-strong {
-  font-weight: 600;
-  color: var(--slidev-accent);
-}
-
-a {
-  color: var(--slidev-accent);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-small, .text-sm {
-  font-size: calc(var(--slidev-body-size) * 0.65);
-  color: var(--slidev-muted);
-}
-
-/* ============================================
-   Code Blocks
-   ============================================ */
-
-.slidev-code {
-  font-family: var(--slidev-mono);
-  font-size: var(--slidev-code-size);
-  line-height: 1.55;
-}
-
-.slidev-code-wrapper,
-pre {
-  background: var(--slidev-code-bg) !important;
-  border-radius: var(--slidev-code-radius);
-  padding: 24px 28px !important;
-  margin: 16px 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  overflow-x: auto;
-}
-
-pre code {
-  color: var(--slidev-code-fg);
-  background: transparent !important;
-}
-
-/* Inline code */
-:not(pre) > code {
-  background: var(--slidev-code-bg);
-  color: var(--slidev-accent);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-family: var(--slidev-mono);
-  font-size: 0.9em;
-}
-
-/* ============================================
-   Mermaid Diagrams
-   ============================================ */
-
-.mermaid {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0;
-}
-
-.mermaid svg {
-  max-width: 100%;
-  max-height: 70vh;
-}
-
-/* ============================================
-   Two-Column Layout
-   ============================================ */
-
-.two-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-}
-
-.col-left, .col-right {
-  display: flex;
-  flex-direction: column;
-}
-
-.col-left h1, .col-right h1 {
-  font-size: calc(var(--slidev-title-size) * 0.78);
-  padding-left: 0;
-  border-left: none;
-  margin-bottom: 20px;
-}
-
-.col-left h2, .col-right h2 {
-  font-size: calc(var(--slidev-title-size) * 0.60);
-}
-
-/* ============================================
-   Center Layout
-   ============================================ */
-
-.center {
-  display: flex !important;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.center h1 {
-  padding-left: 0;
-  border-left: none;
-  text-align: center;
-  font-size: calc(var(--slidev-title-size) * 1.2);
-}
-
-.center p {
-  font-size: calc(var(--slidev-body-size) * 1.1);
-  max-width: 50ch;
-}
-
-/* ============================================
-   Cover Slide
-   ============================================ */
-
-.cover {
-  display: flex !important;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--slidev-canvas);
-  background-image: radial-gradient(
-    ellipse at 30% 50%,
-    var(--slidev-accent-dim) 0%,
-    transparent 70%
-  );
-}
-
-.cover h1 {
-  font-size: calc(var(--slidev-title-size) * 1.4);
-  font-weight: 800;
-  padding-left: 0;
-  border-left: none;
-  margin-bottom: 16px;
-}
-
-.cover p {
-  font-size: calc(var(--slidev-body-size) * 0.9);
-  color: var(--slidev-muted);
-  max-width: 55ch;
-}
-
-.cover .author {
-  margin-top: 48px;
-  font-size: calc(var(--slidev-body-size) * 0.7);
-  color: var(--slidev-muted);
-}
-
-/* ============================================
-   Section Divider
-   ============================================ */
-
-.section {
-  display: flex !important;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  background: var(--slidev-canvas);
-}
-
-.section h1 {
-  font-family: var(--slidev-display);
-  font-size: calc(var(--slidev-title-size) * 1.5);
-  font-weight: 400;
-  font-style: italic;
-  padding-left: 0;
-  border-left: none;
-  margin-bottom: 32px;
-  position: relative;
-  text-align: center;
-}
-
-.section h1::after {
-  content: '';
-  display: block;
-  width: 60px;
-  height: 2px;
-  background: var(--slidev-accent);
-  margin: 24px auto 0;
-}
-
-.section h2 {
-  font-family: var(--slidev-font);
-  font-size: calc(var(--slidev-body-size) * 0.9);
-  font-weight: 400;
-  color: var(--slidev-muted);
-  text-align: center;
-}
-
-/* ============================================
-   Image layouts
-   ============================================ */
-
-.image-right, .image-left {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-}
-
-.image-right img, .image-left img {
-  max-width: 100%;
-  max-height: 60vh;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-/* ============================================
-   Footer
-   ============================================ */
-
-.slidev-layout::after {
-  content: counter(page);
-  position: absolute;
-  bottom: 28px;
-  right: var(--slidev-padding);
-  font-size: 14px;
-  color: var(--slidev-muted);
-  opacity: 0.5;
-}
-
-/* Hide footer on cover and section slides */
-.cover::after,
-.section::after {
-  display: none;
-}
-
-/* ============================================
-   Click animations (disabled by default)
-   ============================================ */
-
-.slidev-vclicks .vclick-hidden {
-  opacity: 0;
-}
-
-/* ============================================
-   Blockquote
-   ============================================ */
-
-blockquote {
-  border-left: 3px solid var(--slidev-accent);
-  padding-left: 24px;
-  margin: 24px 0;
-  color: var(--slidev-muted);
-  font-style: italic;
-  font-size: calc(var(--slidev-body-size) * 1.05);
-}
-
-/* ============================================
-   Tables
-   ============================================ */
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 16px 0;
-  font-size: calc(var(--slidev-body-size) * 0.8);
-}
-
-th {
-  text-align: left;
-  font-weight: 600;
-  color: var(--slidev-muted);
-  padding: 12px 16px;
-  border-bottom: 2px solid var(--slidev-border);
-}
-
-td {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--slidev-border);
-}
-
-tr:last-child td {
-  border-bottom: none;
+  box-sizing: border-box;
 }

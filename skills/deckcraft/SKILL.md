@@ -24,102 +24,198 @@ All output follows the `deck/` convention at the project root:
 deck/
 ├── PRESENTATION.md     # Context: audience, tone, design system, anti-references
 ├── slides.md           # The deck in Slidev markdown (sli.dev)
-├── theme/              # Copied theme template with injected tokens
-│   ├── styles.css      # Full theme stylesheet (customized from template)
-│   └── setup.ts        # Mermaid config + font loading
+├── theme/              # Copied theme template
+│   ├── styles.css      # CSS variables + reset (scoped layouts handle styling)
+│   ├── setup.ts        # Font loading
+│   └── layouts/        # Custom Vue layout components (cover, content, impact, divider)
 ├── assets/             # Generated or placed images, diagrams, screenshots
 └── exports/            # PDF, PPTX, PNG output (gitignored)
 ```
 
-## Before Generating Any Slide
+## Before Generating: The Interview
 
-You must have context. If `deck/PRESENTATION.md` is missing or stale, ask:
+**Never synthesize PRESENTATION.md from a one-liner. Run a real interview.**
 
-1. **Audience** — Who is this for? What do they know? (SREs, frontend devs, execs, mixed)
-2. **Tone** — Authoritative, playful, academic, clinical, inspirational? Name three words.
-3. **Duration** — Lightning (5m), short (15m), standard (30m), deep dive (45-60m)
-4. **Design system** — "Use Kumo", "match Vercel", "MUI", or user-provided:
-   - Explicit values: "primary=#1a1a2e, secondary=#e94560, font=Inter, dark"
-5. **Theme** — `studio` (clean, universal, light/dark) or `nocturne` (dark, terminal aesthetic)
-6. **Anti-references** — What to avoid ("no stock photos", "no purple gradients", "no emoji titles")
+Always offer a **default answer** for each question so the user can say "default" and move on.
 
-Write answers to `deck/PRESENTATION.md`. Never generate slides without this context.
+### Step 1: Explore (if in a codebase)
 
-### Generating the Theme (3-step, no scraping)
+If the user is in a project repo, quickly scan before asking:
+- README, package.json for product context
+- Existing CSS/config for brand colors, fonts
+- Any DESIGN.md, style guide, or logo assets
+- Note what you find and what's still unknown
 
-Do NOT scrape websites at runtime. Use pre-extracted token maps.
+### Step 2: Interview — 3 rounds, 2-3 questions each
 
-1. **Read tokens** — `references/design-system-tokens.md` has pre-extracted colors, fonts, and style notes for Kumo, Vercel, MUI, and more. For custom design systems, derive from user-provided values.
-2. **Copy theme template** — Copy `themes/<chosen-theme>/` to `deck/theme/`. This includes `styles.css` (full design), `setup.ts` (fonts + Mermaid config).
-3. **Inject tokens** — Override the `:root { }` CSS variables in `deck/theme/styles.css` with the design system's colors. The theme template already has beautiful defaults; tokens personalize it.
+Pause after each round and wait for answers. Don't batch all questions at once.
+Every question includes a `[default: ...]` option.
 
-Reference `slides.md` with `theme: ./theme` and slidev picks up the theme directory automatically.
+#### Round 1 — Purpose & Audience
 
-## Core Slide Design Rules
+1. **What's the talk about?** Topic, venue, format?
+2. **Who's the audience?** What do they know? `[default: engineers with general knowledge]`
+3. **What should they do or remember after?** `[default: understand the key concepts]`
 
-These apply to every slide. Deep knowledge is in the reference files.
+#### Round 2 — Design & Tone
 
-### Typography
-- Title: 48-72px. Body: 24-32px (never below 20px). Code: 18-24px (never below 16px).
+4. **Design system or brand?** "Use Kumo", "match Vercel", "MUI", or provide values:
+   "primary=#xxxxx, font=Inter" `[default: none, use theme defaults]`
+5. **Theme?** `studio` (clean universal, light/dark) or `nocturne` (dark technical) `[default: nocturne for tech talks, studio for business]`
+6. **Anti-references?** What to avoid? "no stock photos", "not like Apple keynotes" `[default: no purple gradients, no stock photos, no emoji titles]`
+
+#### Round 3 — Scope
+
+7. **Duration?** `[default: 30 minutes]`
+8. **Specific sections you want?** Any must-cover topics? `[default: none, propose a best-fit outline]`
+9. **Style preference?** Code-heavy, diagram-heavy, or narrative-heavy? `[default: balanced mix]`
+
+### Step 3: Propose outline
+
+Write a slide-by-slide outline. Wait for the user to confirm or adjust before writing any slides.
+
+### Step 4: Generate the deck
+
+1. Read `references/design-system-tokens.md` for pre-extracted tokens (never scrape websites)
+2. Copy chosen theme template from `themes/<theme>/` to `deck/theme/`
+3. Inject design system tokens into `deck/theme/styles.css` CSS variables
+4. Generate `deck/slides.md` using custom layouts (cover, content, impact, divider)
+
+### Step 5: Anti-pattern check
+
+Run the P0 checklist against every slide before showing output.
+
+## Layout System
+
+All slides use custom Vue layout components with **scoped styles**.
+UnoCSS cannot touch scoped styles — no interference, no cut-off content.
+
+| Layout | Uses | Example |
+|--------|------|---------|
+| `cover` | Opening slide | `layout: cover` → Title, subtitle, author |
+| `content` | Default slide | `layout: content` → Title + body, lists, code |
+| `impact` | Big statement | `layout: impact` → Centered stat or CTA |
+| `divider` | Section transition | `layout: divider` → "Part 2: The Solution" |
+
+### Split code + text pattern
+
+Use the `.split` CSS class inside a `content` layout:
+
+```md
+---
+layout: content
+---
+
+# Title
+
+<div class="split">
+<div>
+
+Explanation text here. Bullet points, context.
+
+</div>
+<div>
+
+```jsx {1-3|5|all}
+// Code with click-through highlighting
+function Demo() { ... }
+```
+
+</div>
+</div>
+```
+
+### Per-slide custom styling
+
+Add `<style scoped>` blocks for one-off styles (diagrams, custom grids, spacing):
+
+```md
+---
+layout: content
+---
+
+# My Slide
+
+<div class="my-diagram">...</div>
+
+<style scoped>
+.my-diagram { display: flex; gap: 16px; }
+</style>
+```
+
+## Diagrams: HTML/CSS Only
+
+All diagrams are built with HTML + inline `<style scoped>`.
+No Mermaid. No external rendering. Full visual control.
+
+See `references/diagrams.md` for pre-built patterns (architecture, state machine, sequence).
+
+### Architecture diagram pattern
+
+```html
+<div class="arch">
+  <div class="node accent">API Server</div>
+  <span class="arrow">→</span>
+  <div class="node">Scheduler</div>
+  <span class="arrow">→</span>
+  <div class="node accent">Kubelet</div>
+</div>
+
+<style scoped>
+.arch { display: flex; align-items: center; gap: 16px; justify-content: center; margin: 40px 0; }
+.node { padding: 18px 28px; background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: 8px; font-family: var(--c-mono); font-size: 18px; color: var(--c-foreground); }
+.accent { border-color: var(--c-accent); background: var(--c-accent-dim); }
+.arrow { color: var(--c-accent); font-size: 24px; font-weight: bold; }
+</style>
+```
+
+## Code Slides
+
+- Always specify the language: ```python, ```jsx, ```rust, not bare ```.
+- Highlight key lines: ```jsx {1-3|5|all}.
+- Use `.split` for code + explanation side by side.
+- Never put a long code block on a slide without line highlighting.
+- Code click-through is fine. Text should appear all at once (no `<v-clicks>` on text).
+
+## Core Design Rules
+
+### Typography (handled by layout components)
+- All sizes are set in scoped layout styles. No global overrides needed.
+- Title ~42px, body ~22px, code ~16px. Fits on any projector.
 - Max 6 lines of body text. Max 65 characters per line.
-- One font family for technical talks (system-ui or Inter). Max 2 families for branded decks.
-- Monospace for code. Match the editor: Cascadia Code, JetBrains Mono, Fira Code.
-- All-caps only for eyebrow labels. No italic body text. No thin weights (≤300).
-
-### Color
-- Dark slides: tinted dark backgrounds (never #000). Light slides: warm white (never #fff).
-- Text/background contrast ≥ 4.5:1. Slides are viewed on projectors, not Retina screens.
-- Accent color from design system. Use it on headings, code highlights, and key UI.
-- Semantic colors: error=red, success=green, warning=amber, info=blue.
-
-### Layout
-- One idea per slide. If you need two headings, split into two slides.
-- Default layouts: `default` (title+content), `two-cols` (split), `center` (focused), `image-right`.
-- Don't use the same layout for more than 3 consecutive slides.
-- Left-align body text. Centered only for hero slides or single-stat impact slides.
-
-### Code Slides
-- Always specify the language: ```python, ```rust, ```typescript, not bare ```.
-- Highlight key lines: ```ts {2-3|5|all}.
-- Use `two-cols` layout: code left, explanation right. Or code with annotation arrows.
-- Never put a long code block on a slide without line highlighting or callouts.
-- For live demos, use the Monaco editor component (see `references/slidev.md`).
-
-### Diagrams
-- Use Mermaid for architecture, sequence, state, and flow diagrams.
-- Keep diagrams to ≤8 nodes for projection readability.
-- Mermaid renders at `{scale: 0.7}` by default on slides. Adjust if too dense.
-- Never dump a complex diagram without walking through it with build steps (`|` in Mermaid).
+- Monospace for code: JetBrains Mono, Fira Code, Cascadia Code.
 
 ### Narrative
 - Hook (1-2 slides) → Problem (1-2) → Journey (3-6) → Solution (1-2) → Call to Action (1).
-- Section title slides between major topic changes. Keeps the audience oriented.
-- Presenter notes on every slide. Use `<!-- -->` HTML comments. Notes explain what to say, not what's on the slide.
+- Section title slides between major topic changes.
+- Presenter notes on every slide. Use `<!-- -->` HTML comments.
+
+### Color and Contrast
+- Text/background contrast ≥ 4.5:1. Slides are viewed on projectors.
+- Accent color from design system. Used on headings, code, and key UI.
+- Semantic colors: error=red, success=green, warning=amber, info=blue.
 
 ## Anti-Pattern Checklist
 
-After generating any slide, run this checklist. P0 issues block output.
+Run against every generated slide. P0 issues block output.
 
-**P0 — Broken or unreadable (fix before showing)**
+**P0 — Broken or unreadable**
 - [ ] Wall of text: >6 body lines or >65 chars per line
 - [ ] Bullet hell: >6 bullets or >2 levels of nesting
-- [ ] Tiny type: body <20px, code <16px
 - [ ] Code without language tag
 - [ ] Missing presenter notes
 - [ ] Slide with only a title and no content below
 
-**P1 — Hurts comprehension (strongly fix)**
+**P1 — Hurts comprehension**
 - [ ] Low contrast: text/background <4.5:1
-- [ ] Complex diagram: >8 nodes or unreadable at 1920x1080
-- [ ] Orphan title: h1 with a single bullet underneath (merge or expand)
-- [ ] Code without annotation: no highlights, arrows, or callouts on long blocks
-- [ ] Stock photo filler: generic imagery that adds no meaning
+- [ ] Orphan title: h1 with single bullet (merge or expand)
+- [ ] Code without annotation: no highlights or callouts on long blocks
+- [ ] Stock photo filler: generic imagery with no meaning
 
-**P2 — Weakens impact (consider fixing)**
+**P2 — Weakens impact**
 - [ ] Missing section title slide between topic changes
 - [ ] No call to action on the final slide
 - [ ] Same layout for >3 consecutive slides
-- [ ] Fade-in animation on every element (use selectively)
 - [ ] Title that repeats the previous slide's title verbatim
 
 ## Export
@@ -132,31 +228,31 @@ Only explicit command: `/deckcraft export <format>`.
 | PPTX | `/deckcraft export pptx` | `deck/exports/slides.pptx` |
 | PNG | `/deckcraft export png` | `deck/exports/slide-*.png` |
 
-Requires `playwright-chromium` dev dependency. Slides exported as rendered images (PPTX exports are image-based; text is not selectable).
+Requires `playwright-chromium` dev dependency.
 
 ## Reference Index
 
 | Topic | Reference File | When to Load |
 |-------|---------------|--------------|
-| Design system tokens | `references/design-system-tokens.md` | Before generating theme (do not scrape) |
-| Design system methodology | `references/design-systems.md` | Understanding token extraction |
-| Slidev syntax & features | `references/slidev.md` | Before generating slides |
-| Typography | `references/typography.md` | When typesetting slides |
-| Color | `references/color.md` | When choosing palette |
-| Layout patterns | `references/layout.md` | When structuring slides |
+| Design system tokens | `references/design-system-tokens.md` | Before generating theme |
+| Design system methodology | `references/design-systems.md` | Custom design systems |
+| HTML/CSS diagram patterns | `references/diagrams.md` | When adding diagrams |
+| Slidev syntax + custom layouts | `references/slidev.md` | Before generating slides |
+| Typography rules | `references/typography.md` | Reference for layout design |
+| Color rules | `references/color.md` | When choosing palette |
 | Code slides | `references/code.md` | When presenting code |
-| Diagrams | `references/diagrams.md` | When adding diagrams |
 | Narrative structure | `references/narrative.md` | When organizing deck flow |
 | Anti-patterns | `references/anti-patterns.md` | After generating any slide |
 | Exporting | `references/export.md` | When exporting the deck |
-| Theme templates | `themes/studio/`, `themes/nocturne/` | Copy to `deck/theme/` before generating slides |
+| Theme templates | `themes/studio/`, `themes/nocturne/` | Copy to `deck/theme/` before slides |
 
 ## Critical Rules
 
-- Never generate a slide with body text smaller than 20px.
-- Never generate a code block without a language tag.
-- Never skip presenter notes. Every slide gets them.
-- Never use the same layout for more than 3 slides in a row.
-- Never show output without running the P0 anti-pattern checklist.
-- Always extract or confirm design tokens before generating the theme.
-- Always propose an outline and get user approval before generating the full deck.
+- Never skip the interview. Ask 2-3 questions per round, wait for answers.
+- Always offer a `[default: ...]` for every question.
+- Never scrape websites for design tokens. Read `references/design-system-tokens.md`.
+- Never use Mermaid. Use HTML/CSS diagrams with `<style scoped>`.
+- Never use `<v-clicks>` or `<v-click>` on body text. Text appears all at once.
+- Code click-through highlighting (`{1-3|5|all}`) is fine.
+- All layouts are custom Vue components with scoped styles. Never use Slidev built-in layouts.
+- Always propose an outline before generating slides.

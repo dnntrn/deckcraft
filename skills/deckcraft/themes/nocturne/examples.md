@@ -15,11 +15,13 @@ How we moved 8TB without dropping a single connection
 **Deanna · KubeCon 2026**
 
 ---
-layout: section
+layout: divider
 ---
 
 # Part 1: The Migration Problem
 
+---
+layout: content
 ---
 
 # Why Migrations Fail
@@ -27,31 +29,27 @@ layout: section
 Database migrations are the hardest part of infrastructure work.
 The database is stateful, and state is scary.
 
-<v-clicks>
-
 - **Downtime is not an option** — 8TB takes hours to copy
 - **Replication lag** — the replica is always behind
 - **Schema drift** — production moves while you're copying
 - **Connection storms** — cutover can overwhelm connection pools
 
-</v-clicks>
-
 <!--
-Frame the problem. Everyone in the room has felt this pain.
-Emphasize that we're talking about production databases with
-real traffic — not dev environments.
+Frame the problem. Everyone feels this pain.
+Emphasize: production databases with real traffic.
 -->
 
 ---
-layout: two-cols
+layout: content
 ---
 
 # The Dual-Write Pattern
 
+<div class="split">
+<div>
+
 Write to both databases during the migration window.
 The application doesn't know which one is primary.
-
-<v-click>
 
 ```python
 async def dual_write(query, params):
@@ -60,90 +58,88 @@ async def dual_write(query, params):
     return old  # read from old until cutover
 ```
 
-</v-click>
+</div>
+<div>
 
-::right::
+<div class="arch">
+  <div class="node">App</div>
+  <span class="arrow">⤈</span>
+  <div class="node accent">Dual Writer</div>
+</div>
+<div class="arch" style="margin-top:16px">
+  <div class="node">Old DB</div>
+  <span style="width:40px"></span>
+  <div class="node accent">New DB</div>
+</div>
 
-```mermaid {scale: 0.65}
-graph TD
-    A[Application] --> B[Dual Writer]
-    B --> C[(Old Primary)]
-    B --> D[(New Primary)]
-    B --> E[Replication Check]
+<style scoped>
+.arch { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.node { padding: 14px 22px; background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: 8px; font-family: var(--c-mono); font-size: 16px; color: var(--c-foreground); }
+.accent { border-color: var(--c-accent); background: var(--c-accent-dim); color: var(--c-accent); font-weight: 600; }
+.arrow { color: var(--c-accent); font-size: 20px; }
+</style>
 
-    style E fill:oklch(20% 0.01 260),stroke:oklch(68% 0.22 260),color:oklch(93% 0 0)
-```
+</div>
+</div>
 
 <!--
-Walk through the dual-write architecture.
-The key insight: the application never talks directly to either database.
-The dual writer is the single point of truth.
+Walk through the architecture. The dual writer is the single point of truth.
 -->
 
 ---
-layout: default
+layout: content
 ---
 
 # Migration State Machine
 
-```mermaid {scale: 0.78}
-stateDiagram-v2
-    [*] --> Snapshot
-    Snapshot --> Replaying : Base backup
-    Replaying --> DualWriting : Caught up
-    DualWriting --> Verifying : Lag < 100ms
-    Verifying --> Cutover : Checks pass
-    Cutover --> [*]
+<div class="states">
+  <div class="state">Snapshot</div>
+  <span class="st-arrow">→</span>
+  <div class="state">Replaying</div>
+  <span class="st-arrow">→</span>
+  <div class="state accent">Dual Writing</div>
+  <span class="st-arrow">→</span>
+  <div class="state">Verifying</div>
+  <span class="st-arrow">→</span>
+  <div class="state accent">Cutover</div>
+</div>
 
-    note right of DualWriting
-        Both databases active.
-        Monitor replication lag.
-    end note
-```
+<p class="text-sm" style="text-align:center;margin-top:28px">
+  Each state has acceptance criteria before advancing
+  <br/>
+  <strong>Dual Writing</strong>: both databases active, monitor replication lag
+</p>
+
+<style scoped>
+.states { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.state { padding: 14px 22px; background: var(--c-code-bg); border: 1px solid var(--c-border); border-radius: 8px; font-family: var(--c-mono); font-size: 16px; color: var(--c-foreground); }
+.accent { border-color: var(--c-accent); background: var(--c-accent-dim); color: var(--c-accent); font-weight: 600; }
+.st-arrow { color: var(--c-accent); font-size: 14px; }
+</style>
 
 <!--
 This is the core mental model. Each state has specific
 acceptance criteria before moving to the next.
-Don't skip verification — that's how you get corruption.
 -->
 
 ---
-layout: center
+layout: impact
 ---
 
 # 0
 
 Downtime seconds during the 8TB cutover
 
-<span class="text-sm">p99 latency increased by 12ms during dual-write window</span>
+<span class="text-sm">p99 latency +12ms during dual-write window</span>
 
 ---
-layout: section
+layout: divider
 ---
 
 # Part 2: The Tooling
 
 ---
-
-# What We Built
-
-<v-clicks>
-
-- `pg-shuttle` — the dual-write proxy that sat between our app and both databases
-- `pg-verify` — a checksum validator that compared every row across both databases
-- `pg-cutover` — the atomic cutover script that swapped primaries in under 100ms
-
-All open source. All tested on our own production first.
-
-</v-clicks>
-
-<!--
-Mention that pg-shuttle is available at github.com/our-org/pg-shuttle.
-This is the call-to-action moment — give people the tools.
--->
-
----
-layout: default
+layout: content
 ---
 
 # Try It Yourself
@@ -170,6 +166,6 @@ $ pg-shuttle migrate \
 </p>
 
 <!--
-End with executable code. People should be able to copy-paste
-and try it. This is the most important slide in the deck.
+End with executable code. Most important slide.
+People should copy-paste and try it.
 -->
