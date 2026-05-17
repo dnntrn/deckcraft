@@ -4,37 +4,50 @@
   </div>
 </template>
 
-<style scoped>
+<style>
 .cover-layout {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 64px;
-  background:
-    radial-gradient(ellipse 800px 500px at 30% 50%, var(--c-accent-dim, oklch(58% 0.22 260 / 0.08)) 0%, transparent 70%);
+  padding: 64px 80px;
+  position: relative;
+  overflow: hidden;
+  background: var(--c-canvas);
 }
 
-.cover-layout :deep(h1) {
-  font-size: 58px;
-  font-weight: 800;
+.cover-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 800px 400px at 25% 40%, var(--c-accent-dim) 0%, transparent 60%),
+    radial-gradient(ellipse 300px 250px at 80% 60%, oklch(58% 0.22 260 / 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cover-layout h1 {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
   letter-spacing: -0.02em;
-  line-height: 1.15;
+  line-height: 1.1;
   margin: 0 0 16px 0;
   color: var(--c-foreground);
+  max-width: 860px;
 }
 
-.cover-layout :deep(p) {
-  font-size: 22px;
+.cover-layout p {
+  font-size: clamp(16px, 1.9vw, 19px);
+  line-height: 1.5;
   color: var(--c-muted);
-  margin: 0 0 8px 0;
-  max-width: 56ch;
+  margin: 0 0 5px 0;
 }
 
-.cover-layout :deep(.author) {
-  margin-top: 40px;
-  font-size: 18px;
+.cover-layout .author {
+  margin-top: 36px;
+  font-size: 15px;
   color: var(--c-muted);
+  font-family: var(--c-mono);
 }
 </style>

@@ -4,199 +4,217 @@
   </div>
 </template>
 
-<style scoped>
+<style>
 .content-layout {
   width: 100%;
   height: 100%;
-  padding: 56px 56px 48px 56px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 60px 40px 60px;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--c-canvas);
 }
 
-.content-layout :deep(h1) {
-  font-size: 42px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin: 0 0 16px 0;
-  color: var(--c-accent);
+.content-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 150px at 50% 2%,
+      var(--c-accent-dim) 0%,
+      transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
 }
 
-.content-layout :deep(h2) {
-  font-size: 28px;
+.content-layout h1 {
+  font-size: clamp(28px, 3.8vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 14px 0;
+  color: var(--c-foreground);
+  padding-bottom: 12px;
+  border-bottom: 2px solid;
+  border-image: linear-gradient(to right, var(--c-accent), transparent 60%) 1;
+}
+
+.content-layout h2 {
+  font-size: clamp(22px, 2.8vw, 26px);
   font-weight: 600;
   line-height: 1.25;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   color: var(--c-foreground);
 }
 
-.content-layout :deep(h3) {
-  font-size: 22px;
+.content-layout h3 {
+  font-size: clamp(17px, 2.2vw, 20px);
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   color: var(--c-muted);
-}
-
-.content-layout :deep(p) {
-  font-size: 22px;
-  line-height: 1.5;
-  margin: 0 0 12px 0;
-  color: var(--c-foreground);
-}
-
-.content-layout :deep(ul),
-.content-layout :deep(ol) {
-  font-size: 22px;
-  line-height: 1.5;
-  padding-left: 1.4em;
-  margin: 0 0 12px 0;
-}
-
-.content-layout :deep(li) {
-  margin-bottom: 6px;
-  color: var(--c-foreground);
-}
-
-.content-layout :deep(li::marker) {
-  color: var(--c-accent);
-}
-
-.content-layout :deep(strong) {
-  font-weight: 600;
-  color: var(--c-foreground);
-}
-
-.content-layout :deep(a) {
-  color: var(--c-accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.content-layout :deep(small),
-.content-layout :deep(.text-sm) {
-  font-size: 16px;
-  color: var(--c-muted);
-}
-
-.content-layout :deep(code) {
   font-family: var(--c-mono);
-  font-size: 0.9em;
-  background: var(--c-code-bg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.content-layout p {
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.55;
+  margin: 0 0 10px 0;
+  color: var(--c-foreground);
+}
+
+.content-layout ul,
+.content-layout ol {
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.5;
+  padding-left: 1.3em;
+  margin: 0 0 10px 0;
+}
+
+.content-layout li {
+  margin-bottom: 5px;
+}
+
+.content-layout li::marker {
   color: var(--c-accent);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--c-border);
+  opacity: 0.6;
 }
 
-.content-layout :deep(pre) {
+.content-layout strong {
+  font-weight: 600;
+}
+
+.content-layout a {
+  color: var(--c-accent);
+  text-decoration: none;
+  border-bottom: 1px solid oklch(63% 0.16 260 / 0.4);
+}
+
+.content-layout small,
+.content-layout .text-sm {
+  font-size: clamp(13px, 1.6vw, 15px);
+  color: var(--c-muted);
+}
+
+.content-layout pre {
   position: relative;
-  background: var(--c-code-bg) !important;
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 24px 20px 18px 20px !important;
-  margin: 12px 0;
-  font-size: 16px;
-  line-height: 1.45;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 400px;
-  box-shadow: 0 4px 24px oklch(0% 0 0 / 0.4);
+  background: oklch(14% 0.003 260) !important;
+  border: 1px solid oklch(100% 0 0 / 0.06);
+  border-radius: 10px;
+  padding: 26px 22px 16px 22px !important;
+  margin: 10px 0;
+  font-family: var(--c-mono);
+  font-size: clamp(13px, 1.6vw, 15px);
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 55vh;
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.02) inset,
+    0 8px 32px oklch(0% 0 0 / 0.3);
 }
 
-/* Terminal chrome dots */
-.content-layout :deep(pre::before) {
+.content-layout pre::before {
   content: '';
   display: block;
   position: absolute;
   top: 10px;
   left: 14px;
-  width: 42px;
-  height: 10px;
+  width: 36px;
+  height: 8px;
   background-image:
-    radial-gradient(circle 4px, var(--c-code-dot-red, oklch(55% 0.19 20)) 100%, transparent 100%),
-    radial-gradient(circle 4px, var(--c-code-dot-yellow, oklch(60% 0.17 85)) 100%, transparent 100%),
-    radial-gradient(circle 4px, var(--c-code-dot-green, oklch(55% 0.16 150)) 100%, transparent 100%);
-  background-position: 0 0, 14px 0, 28px 0;
+    radial-gradient(circle 3px, oklch(58% 0.18 20) 100%, transparent 100%),
+    radial-gradient(circle 3px, oklch(62% 0.16 85) 100%, transparent 100%),
+    radial-gradient(circle 3px, oklch(56% 0.14 150) 100%, transparent 100%);
+  background-position: 0 0, 12px 0, 24px 0;
   background-repeat: no-repeat;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
-.content-layout :deep(pre code) {
+.content-layout pre code {
   background: transparent !important;
   color: var(--c-code-fg);
   padding: 0;
-  font-size: 16px;
+  font-size: inherit;
 }
 
-.content-layout :deep(blockquote) {
-  border-left: 3px solid var(--c-accent);
-  padding-left: 20px;
-  margin: 16px 0;
+.content-layout :not(pre) > code {
+  background: oklch(100% 0 0 / 0.05);
+  color: var(--c-accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--c-mono);
+  font-size: 0.88em;
+  border: 1px solid oklch(100% 0 0 / 0.04);
+}
+
+.content-layout blockquote {
+  border-left: 2px solid var(--c-accent);
+  padding: 4px 0 4px 18px;
+  margin: 10px 0;
   color: var(--c-muted);
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.5;
   font-style: italic;
-  font-size: 20px;
 }
 
-.content-layout :deep(table) {
+.content-layout table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 18px;
-  margin: 12px 0;
+  font-size: clamp(14px, 1.8vw, 17px);
+  margin: 10px 0;
 }
 
-.content-layout :deep(thead) {
-  border-bottom: 2px solid var(--c-accent);
+.content-layout thead {
+  border-bottom: 1px solid var(--c-accent);
 }
 
-.content-layout :deep(th) {
+.content-layout th {
   text-align: left;
   font-weight: 600;
   color: var(--c-muted);
-  padding: 10px 14px;
+  padding: 8px 12px;
   font-family: var(--c-mono);
-  font-size: 15px;
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
-.content-layout :deep(td) {
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--c-border);
+.content-layout td {
+  padding: 7px 12px;
+  border-bottom: 1px solid oklch(100% 0 0 / 0.04);
 }
 
-.content-layout :deep(tr:last-child td) {
+.content-layout tr:last-child td {
   border-bottom: none;
 }
 
-/* Split grid utility */
-.content-layout :deep(.split) {
+.content-layout .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 36px;
-  height: 100%;
+  min-height: 0;
 }
 
-.content-layout :deep(.split > *) {
+.content-layout .split > * {
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
 }
 
-.content-layout :deep(.split pre) {
-  max-height: 340px;
-  font-size: 14px;
+.content-layout .split pre {
+  max-height: 45vh;
+  font-size: clamp(12px, 1.5vw, 14px);
 }
 
-.content-layout :deep(.split h1) {
-  font-size: 32px;
-  margin-bottom: 12px;
+.content-layout .split h1 {
+  font-size: clamp(24px, 3vw, 28px);
+  padding-bottom: 10px;
 }
 
-/* Inline code in content */
-.content-layout :deep(:not(pre) > code) {
-  background: var(--c-code-bg);
-  color: var(--c-accent);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--c-border);
-  font-size: 0.9em;
+.content-layout .split h2 {
+  font-size: clamp(17px, 2.2vw, 20px);
 }
 </style>

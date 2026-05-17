@@ -4,165 +4,185 @@
   </div>
 </template>
 
-<style scoped>
+<style>
 .content-layout {
   width: 100%;
   height: 100%;
-  padding: 56px 56px 48px 56px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 60px 40px 60px;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--c-canvas);
 }
 
-.content-layout :deep(h1) {
-  font-size: 42px;
+.content-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 150px at 50% 2%, var(--c-accent-dim) 0%, transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.content-layout h1 {
+  font-size: clamp(28px, 3.8vw, 36px);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
-  margin: 0 0 16px 0;
-  padding-left: 24px;
-  border-left: 4px solid var(--c-accent);
+  margin: 0 0 14px 0;
   color: var(--c-foreground);
+  padding-left: 20px;
+  border-left: 3px solid var(--c-accent);
 }
 
-.content-layout :deep(h2) {
-  font-size: 28px;
+.content-layout h2 {
+  font-size: clamp(22px, 2.8vw, 26px);
   font-weight: 600;
   line-height: 1.25;
-  margin: 0 0 12px 0;
+  margin: 0 0 10px 0;
   color: var(--c-foreground);
 }
 
-.content-layout :deep(h3) {
-  font-size: 22px;
+.content-layout h3 {
+  font-size: clamp(17px, 2.2vw, 20px);
   font-weight: 600;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   color: var(--c-muted);
-}
-
-.content-layout :deep(p) {
-  font-size: 22px;
-  line-height: 1.5;
-  margin: 0 0 12px 0;
-  color: var(--c-foreground);
-}
-
-.content-layout :deep(ul),
-.content-layout :deep(ol) {
-  font-size: 22px;
-  line-height: 1.5;
-  padding-left: 1.4em;
-  margin: 0 0 12px 0;
-}
-
-.content-layout :deep(li) {
-  margin-bottom: 6px;
-  color: var(--c-foreground);
-}
-
-.content-layout :deep(li::marker) {
-  color: var(--c-accent);
-}
-
-.content-layout :deep(strong) {
-  font-weight: 600;
-  color: var(--c-foreground);
-}
-
-.content-layout :deep(a) {
-  color: var(--c-accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.content-layout :deep(small),
-.content-layout :deep(.text-sm) {
-  font-size: 16px;
-  color: var(--c-muted);
-}
-
-.content-layout :deep(code) {
   font-family: var(--c-mono);
-  font-size: 0.9em;
-  background: var(--c-code-bg);
-  color: var(--c-accent);
-  padding: 2px 6px;
-  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.content-layout :deep(pre) {
+.content-layout p {
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.55;
+  margin: 0 0 10px 0;
+  color: var(--c-foreground);
+}
+
+.content-layout ul,
+.content-layout ol {
+  font-size: clamp(17px, 2.2vw, 20px);
+  line-height: 1.5;
+  padding-left: 1.3em;
+  margin: 0 0 10px 0;
+}
+
+.content-layout li {
+  margin-bottom: 5px;
+}
+
+.content-layout li::marker {
+  color: var(--c-accent);
+  opacity: 0.5;
+}
+
+.content-layout strong {
+  font-weight: 600;
+}
+
+.content-layout a {
+  color: var(--c-accent);
+  text-decoration: none;
+  border-bottom: 1px solid oklch(58% 0.22 260 / 0.3);
+}
+
+.content-layout small,
+.content-layout .text-sm {
+  font-size: clamp(13px, 1.6vw, 15px);
+  color: var(--c-muted);
+}
+
+.content-layout pre {
   background: var(--c-code-bg) !important;
   border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 18px 20px !important;
-  margin: 12px 0;
-  font-size: 16px;
-  line-height: 1.45;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 400px;
+  border-radius: 10px;
+  padding: 20px 22px !important;
+  margin: 10px 0;
+  font-size: clamp(13px, 1.6vw, 15px);
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 55vh;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.04);
 }
 
-.content-layout :deep(pre code) {
+.content-layout pre code {
   background: transparent !important;
   color: var(--c-code-fg);
   padding: 0;
-  font-size: 16px;
+  font-size: inherit;
 }
 
-.content-layout :deep(blockquote) {
-  border-left: 3px solid var(--c-accent);
-  padding-left: 20px;
-  margin: 16px 0;
+.content-layout :not(pre) > code {
+  background: var(--c-code-bg);
+  color: var(--c-accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--c-mono);
+  font-size: 0.88em;
+  border: 1px solid var(--c-border);
+}
+
+.content-layout blockquote {
+  border-left: 2px solid var(--c-accent);
+  padding: 4px 0 4px 18px;
+  margin: 10px 0;
   color: var(--c-muted);
-  font-style: italic;
-  font-size: 20px;
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.5;
 }
 
-.content-layout :deep(table) {
+.content-layout table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 18px;
-  margin: 12px 0;
+  font-size: clamp(14px, 1.8vw, 17px);
+  margin: 10px 0;
 }
 
-.content-layout :deep(th) {
+.content-layout thead {
+  border-bottom: 1px solid var(--c-accent);
+}
+
+.content-layout th {
   text-align: left;
   font-weight: 600;
   color: var(--c-muted);
-  padding: 10px 14px;
-  border-bottom: 2px solid var(--c-border);
+  padding: 8px 12px;
   font-family: var(--c-mono);
-  font-size: 15px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.content-layout :deep(td) {
-  padding: 8px 14px;
+.content-layout td {
+  padding: 7px 12px;
   border-bottom: 1px solid var(--c-border);
 }
 
-/* Split grid utility */
-.content-layout :deep(.split) {
+.content-layout .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 36px;
-  height: 100%;
+  min-height: 0;
 }
 
-.content-layout :deep(.split > *) {
+.content-layout .split > * {
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
 }
 
-.content-layout :deep(.split pre) {
-  max-height: 340px;
-  font-size: 14px;
+.content-layout .split pre {
+  max-height: 45vh;
+  font-size: clamp(12px, 1.5vw, 14px);
 }
 
-.content-layout :deep(.split h1) {
-  font-size: 32px;
+.content-layout .split h1 {
+  font-size: clamp(24px, 3vw, 28px);
   padding-left: 0;
   border-left: none;
-  margin-bottom: 12px;
 }
 </style>

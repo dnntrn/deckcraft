@@ -4,7 +4,7 @@
   </div>
 </template>
 
-<style scoped>
+<style>
 .impact-layout {
   width: 100%;
   height: 100%;
@@ -13,31 +13,47 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 56px;
-  background:
-    radial-gradient(ellipse 600px 300px at 50% 50%, var(--c-accent-dim, oklch(68% 0.22 260 / 0.08)) 0%, transparent 70%);
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+  background: var(--c-canvas);
 }
 
-.impact-layout :deep(h1) {
-  font-size: 72px;
+.impact-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 500px 350px at 50% 50%,
+      var(--c-accent-glow) 0%,
+      transparent 65%),
+    radial-gradient(ellipse 700px 150px at 50% 90%,
+      oklch(63% 0.16 260 / 0.04) 0%,
+      transparent 70%);
+  pointer-events: none;
+}
+
+.impact-layout h1 {
+  font-size: clamp(40px, 6vw, 56px);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 0 0 12px 0;
-  color: var(--c-accent);
+  line-height: 1.05;
+  margin: 0 0 10px 0;
+  color: var(--c-foreground);
 }
 
-.impact-layout :deep(p) {
-  font-size: 22px;
+.impact-layout p {
+  font-size: clamp(16px, 2vw, 19px);
   color: var(--c-muted);
   margin: 0;
-  max-width: 48ch;
 }
 
-.impact-layout :deep(.text-sm) {
-  font-size: 16px;
+.impact-layout .text-sm {
+  display: block;
+  margin-top: 10px;
+  font-size: clamp(13px, 1.6vw, 15px);
   color: var(--c-muted);
-  margin-top: 8px;
   font-family: var(--c-mono);
+  letter-spacing: 0.02em;
 }
 </style>
