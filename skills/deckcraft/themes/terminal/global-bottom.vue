@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { useNav } from '@slidev/client'
-import { computed, onMounted, onUnmounted, unref } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 
 const nav = useNav()
 
 const counter = computed(() => {
-  if (!nav) return ''
-  const page = unref(nav.currentPage)
-  const total = unref(nav.total)
-  if (total == null || total === 0) return ''
-  return `${page} / ${total}`
+  if (!nav || !nav.total) return ''
+  return `${nav.currentPage} / ${nav.total}`
 })
 
 function handleKeydown(e: KeyboardEvent) {
@@ -22,7 +19,12 @@ function handleKeydown(e: KeyboardEvent) {
   }
   if (e.key === 's' || e.key === 'S') {
     e.preventDefault()
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))
+    // Try multiple selectors to find Slidev's search input
+    const input = document.querySelector<HTMLInputElement>('input[placeholder*="earch"], #search-input input, [class*="search"] input')
+    if (input) {
+      input.focus()
+      input.click()
+    }
   }
   if (e.key === 'f' || e.key === 'F') {
     e.preventDefault()

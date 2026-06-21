@@ -1,30 +1,64 @@
-# Nocturne Theme
+# Terminal
 
-Dark technical presentation theme. Terminal/editor aesthetic. Rich backgrounds, deliberate lighting.
+**Born in server rooms. Raised by logs.**
 
-## When to use
+Terminal doesn't do small talk. It shows you the architecture, the stack trace, the truth. Every pixel serves function. Decoration is suspect. Clarity is everything.
 
-- Technical deep dives, infrastructure talks, backend/system presentations
-- Dark conference rooms (most tech conferences)
-- Kubernetes, databases, distributed systems, security talks
-- When you want the slides to feel like a developer tool
+## Character
 
-## Design principles
+Terminal believes precision is beauty. It strips away ornament until only signal remains. The dark canvas absorbs distraction. The monospace rhythm creates order from chaos.
 
-- Very dark background with subtle radial vignette
-- JetBrains Mono for code and body
-- Accent colors glow against the dark canvas
-- Code blocks styled like terminal windows (chrome dots included)
-- Mermaid diagrams in dark mode with colored edges
-- Section dividers with dramatic large type
-- Subtle grid texture behind content (blueprint feel)
+When Terminal presents code, it doesn't just display—it reveals. Terminal window chrome on code blocks isn't decoration; it's context. This is where infrastructure lives.
+
+## When to Use
+
+Terminal is for:
+
+- **Infrastructure talks** — Kubernetes, databases, distributed systems
+- **Security deep-dives** — Where every detail matters
+- **API documentation** — Precision over poetry
+- **Engineering onboarding** — Teaching the systems that run the world
+- **Dark conference rooms** — Where Terminal's contrast shines
+
+Choose Terminal when you want credibility through technical authenticity.
+
+## Design Principles
+
+- **Dark canvas with radial vignette** — Absorbs light, focuses attention
+- **JetBrains Mono everywhere** — Even prose feels technical
+- **Accent colors glow** — Against the dark, they become signal
+- **Terminal chrome on code** — Red/yellow/green dots frame every block
+- **Subtle grid texture** — The blueprint feel of systems design
+- **Dramatic section dividers** — Mono headings at scale
+
+## Best For
+
+Infrastructure. Backend. Security. Systems. Anything where "it works" isn't enough—you need to show *why* it works.
+
+## Not For
+
+Soft launches. Emotional narratives. When you need warmth over precision.
 
 ## Customization
 
-All colors are CSS custom properties. Override `--slidev-accent`, `--slidev-canvas`, `--slidev-foreground`, `--nocturne-glow`, etc.
+All colors are CSS custom properties:
+
+```css
+--c-canvas        /* Dark background */
+--c-foreground    /* Primary text */
+--c-accent        /* Your brand color */
+--c-code-bg       /* Terminal window chrome */
+```
+
+Override in `styles.css` or inject tokens during generation.
 
 ## Files
 
-- `styles.css` — Full stylesheet for Slidev
-- `setup.ts` — Font loading and Mermaid dark theme configuration
-- `examples.md` — Sample slides showing each layout
+- `styles.css` — CSS variables and reset
+- `setup.ts` — Font loading configuration
+- `layouts/` — Vue components (cover, content, impact, divider)
+- `examples.md` — Sample slides
+
+---
+
+*Terminal doesn't ask for attention. It commands it.*

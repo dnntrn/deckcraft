@@ -1,0 +1,159 @@
+<!-- 
+  OFFICIAL PRODUCT LOGO TEMPLATE
+  
+  This is the official branded logo component.
+  Format: made with < ✦✧ PRODUCT_NAME />
+  
+  To use for a new product:
+  1. Copy this code
+  2. Replace "deckcraft" with your product name
+  3. Adjust product-name width if needed
+  
+  Colors:
+  - Brackets: #b98ee1 (lavender)
+  - Stars: iridescent gradient (pink → peach → lavender)
+  - Product name: iridescent gradient with shimmer animation
+-->
+<a href="https://github.com/dnntrn/deckcraft" target="_blank">
+  <span class="prefix">made with </span>
+  <svg class="logo-left" viewBox="0 0 33 24" width="20" height="14" style="overflow: visible; flex-shrink: 0;">
+    <defs>
+      <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#e8a5c0"/>
+        <stop offset="33%" stop-color="#f4c2a1"/>
+        <stop offset="66%" stop-color="#d4a5e8"/>
+        <stop offset="100%" stop-color="#e8a5c0"/>
+      </linearGradient>
+      <filter id="starGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2" result="blur1"/>
+        <feGaussianBlur stdDeviation="4" result="blur2"/>
+        <feMerge>
+          <feMergeNode in="blur2"/>
+          <feMergeNode in="blur1"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <!-- Left Bracket < -->
+    <path d="M8 4 L3 12 L8 20" fill="none" stroke="#b98ee1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Stars with glow -->
+    <g filter="url(#starGlow)">
+      <path class="logo-star" d="M16 6 Q 16 12 22 12 Q 16 12 16 18 Q 16 12 10 12 Q 16 12 16 6 Z" fill="url(#starGradient)"/>
+      <path class="logo-star-small" d="M26 3 Q 26 8 31 8 Q 26 8 26 13 Q 26 8 21 8 Q 26 8 26 3 Z" fill="url(#starGradient)"/>
+    </g>
+  </svg>
+  <span class="product-name">deckcraft</span>
+  <svg class="logo-right" viewBox="0 0 24 24" width="12" height="12" style="overflow: visible; flex-shrink: 0;">
+    <!-- Slash line goes from bottom-left to top-right -->
+    <path d="M4 20 L8 4" fill="none" stroke="#b98ee1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Right bracket > -->
+    <path d="M13 4 L18 12 L13 20" fill="none" stroke="#b98ee1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</a>
+
+<style>
+/* Container */
+.deck-signature a, .deck-signature-zoom a {
+    color: oklch(60% 0 0 / 0.4);
+    text-decoration: none;
+    pointer-events: auto;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-family: ui-monospace, monospace;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+/* Prefix text */
+.prefix {
+    font-weight: 300;
+    letter-spacing: 0.02em;
+}
+
+/* SVG containers */
+.logo-left, .logo-right {
+    flex-shrink: 0;
+}
+
+/* Star animation */
+.logo-star, .logo-star-small {
+    animation: starPulse 5s ease-in-out infinite;
+}
+
+@keyframes starPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Product name with iridescent gradient */
+.product-name {
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0 2px;
+    background: linear-gradient(
+        90deg,
+        oklch(70% 0.15 340),
+        oklch(75% 0.12 30),
+        oklch(70% 0.08 280),
+        oklch(70% 0.15 340)
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 5s ease-in-out infinite;
+    position: relative;
+}
+
+/* Glow layers behind product name */
+.product-name::before {
+    content: '';
+    position: absolute;
+    inset: -6px -8px;
+    background: linear-gradient(
+        90deg,
+        oklch(70% 0.15 340 / 0.08),
+        oklch(75% 0.12 30 / 0.1),
+        oklch(70% 0.08 280 / 0.08),
+        oklch(70% 0.15 340 / 0.08)
+    );
+    background-size: 200% 100%;
+    border-radius: 50%;
+    filter: blur(12px);
+    animation: shimmer 5s ease-in-out infinite;
+    z-index: -2;
+    opacity: 0.8;
+}
+
+.product-name::after {
+    content: '';
+    position: absolute;
+    inset: -3px -5px;
+    background: linear-gradient(
+        90deg,
+        oklch(70% 0.15 340 / 0.12),
+        oklch(75% 0.12 30 / 0.15),
+        oklch(70% 0.08 280 / 0.12),
+        oklch(70% 0.15 340 / 0.12)
+    );
+    background-size: 200% 100%;
+    border-radius: 40%;
+    filter: blur(6px);
+    animation: shimmer 5s ease-in-out infinite;
+    z-index: -1;
+    opacity: 0.7;
+}
+
+/* Shimmer animation for gradient */
+@keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Hover effect */
+.deck-signature a:hover, .deck-signature-zoom a:hover {
+    color: oklch(60% 0 0 / 0.65);
+}
+</style>
