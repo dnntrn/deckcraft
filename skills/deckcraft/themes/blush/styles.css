@@ -1,41 +1,263 @@
-/* Blush Theme — Warm, soft, feminine. Rounded corners, rose accents, Cormorant headings. */
+/* Blush Theme — Warm, soft, feminine. Rounded corners, rose accents, DM Serif Display headings. */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital,wght@0,400;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&family=Poppins:wght@400;500;600&display=swap');
+@import '../shared/base.css';
 
 :root {
+  /* ─── Tier 1: Required ─────────────────────────────────────────── */
   --c-canvas: oklch(97% 0.005 20);
-  --c-foreground: oklch(16% 0.005 20);
-  --c-muted: oklch(52% 0.005 15);
-  --c-border: oklch(88% 0.004 20);
-  --c-accent: oklch(58% 0.14 15);
-  --c-accent-dim: oklch(58% 0.14 15 / 0.07);
-  --c-accent-glow: oklch(58% 0.14 15 / 0.12);
+  --c-foreground: #66391A;
+  --c-muted: oklch(52% 0.01 20);
+  --c-border: oklch(88% 0.006 20);
+  --c-accent: #66391A;
+  --c-font: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ─── Tier 2: Theme Personality ─────────────────────────────────── */
+  /* Typography — italic serif display, sans body, Poppins labels */
+  --c-display: 'DM Serif Display', Georgia, serif;
+  --c-heading: oklch(46% 0.035 30);
+  --c-heading-style: italic;
+  --c-heading-weight: 400;
+  --c-heading-tracking: -0.03em;
+  --c-tertiary: 'Poppins', system-ui, sans-serif;
+
+  /* Highlight — rose for decorative elements, active states */
+  --c-highlight: #EB95A2;
+  --c-highlight-dim: oklch(75% 0.08 10 / 0.12);
+
+  /* Accent derivatives */
+  --c-accent-dim: oklch(50% 0.04 30 / 0.08);
+  --c-accent-glow: oklch(50% 0.04 30 / 0.18);
+
+  /* Code colors */
+  --c-code-bg: oklch(94% 0.003 20);
+  --c-code-fg: oklch(18% 0.005 20);
+
+  /* Type scale — blush uses px values */
+  --c-text-xs: 11px;
+  --c-text-sm: 13px;
+  --c-text-base: 16px;
+  --c-text-lg: 19px;
+  --c-text-xl: 20px;
+  --c-text-2xl: 24px;
+
+  /* Layout-specific display sizes */
+  --c-text-cover: 56px;
+  --c-text-impact: 72px;
+  --c-text-divider: 40px;
+  --c-text-h1: 36px;
+  --c-text-h2: 22px;
+  --c-text-metric-h1: 32px;
+  --c-text-metric-value: 44px;
+
+  /* Radius — blush is rounder than default */
+  --c-radius-sm: 8px;
+  --c-radius-md: 14px;
+  --c-radius-lg: 20px;
+
+  /* Glass effect — warm-tinted, not pure white */
+  --c-glass-bg: oklch(99% 0.004 20 / 0.6);
+  --c-glass-blur: blur(10px);
+  --c-glass-shadow: 0 2px 16px oklch(35% 0.02 20 / 0.05);
+  --c-glass-shadow-hover: 0 8px 32px oklch(35% 0.02 20 / 0.1);
+  --c-card-border: oklch(88% 0.006 20 / 0.35);
+
+  /* Spacing */
+  --c-pad-slide: 72px 80px 80px 88px;
+  --c-pad-centered: 56px;
+
+  /* Semantic */
   --c-success: oklch(55% 0.16 155);
   --c-warning: oklch(60% 0.16 75);
   --c-danger: oklch(50% 0.18 20);
-  --c-code-bg: oklch(94% 0.003 20);
-  --c-code-fg: oklch(18% 0.004 20);
-  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
-  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-  --c-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
 }
 
 @media (prefers-color-scheme: dark) {
-html, body, #app { height: 100%; overflow: hidden; }
-
-:root {
-    --c-canvas: oklch(14% 0.015 350);
+  :root {
+    --c-canvas: oklch(14% 0.012 20);
     --c-foreground: oklch(92% 0.005 20);
-    --c-muted: oklch(65% 0.008 350);
-    --c-border: oklch(30% 0.012 350);
-    --c-accent: oklch(68% 0.14 15);
-    --c-accent-dim: oklch(68% 0.14 15 / 0.08);
-    --c-accent-glow: oklch(68% 0.14 15 / 0.14);
+    --c-muted: oklch(62% 0.01 20);
+    --c-border: oklch(30% 0.008 20);
+
+    /* Dark mode: accent shifts to rose, highlight shifts to brown */
+    --c-accent: #EB95A2;
+    --c-accent-dim: oklch(75% 0.08 10 / 0.1);
+    --c-accent-glow: oklch(75% 0.08 10 / 0.2);
+
+    --c-highlight: #DBA88E;
+    --c-highlight-dim: oklch(65% 0.04 50 / 0.12);
+
+    --c-heading: oklch(82% 0.04 20);
+
+    --c-code-bg: oklch(18% 0.008 20);
+    --c-code-fg: oklch(90% 0.003 20);
+
+    --c-glass-bg: oklch(20% 0.004 20 / 0.5);
+    --c-card-border: oklch(30% 0.008 20 / 0.4);
+    --c-glass-shadow: 0 2px 16px oklch(0% 0 0 / 0.2);
+    --c-glass-shadow-hover: 0 8px 32px oklch(0% 0 0 / 0.3);
+
     --c-success: oklch(65% 0.14 155);
     --c-warning: oklch(68% 0.14 75);
     --c-danger: oklch(55% 0.16 20);
-    --c-code-bg: oklch(20% 0.012 350);
-    --c-code-fg: oklch(90% 0.004 20);
   }
 }
 
-.slidev-page { position: relative; background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
-.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; position: relative; }
+/* ═══════════════════════════════════════════════════════════════════
+   BLUSH LAYOUT OVERRIDES
+   Personality beyond tokens. These give each layout crafted warmth.
+   Uses .slidev-page prefix for specificity over Vue <style> blocks.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Soft easing curve for all blush transitions ── */
+:root {
+  --c-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Global: Emphasis ── */
+.slidev-page em {
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 4px;
+}
+
+/* ── Global: Card & metric hover ── */
+.slidev-page .card,
+.slidev-page .metric,
+.slidev-page .content-card {
+  transition: box-shadow 0.3s var(--c-ease),
+              transform 0.3s var(--c-ease),
+              border-color 0.3s var(--c-ease);
+}
+.slidev-page .card:hover,
+.slidev-page .metric:hover,
+.slidev-page .content-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ── Cover: author separator, title breathing room ── */
+.slidev-page .cover-layout h1 {
+  line-height: 1.08;
+}
+.slidev-page .cover-layout .author {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--c-border);
+  display: inline-block;
+}
+
+/* ── Impact: elegant underline ── */
+.slidev-page .impact-layout h1 {
+  letter-spacing: -0.05em;
+}
+.slidev-page .impact-layout h1::after {
+  width: 56px;
+  height: 3px;
+  border-radius: 3px;
+  margin-top: 20px;
+}
+
+/* ── Divider: wider, thinner accent bar ── */
+.slidev-page .divider-layout h1::after {
+  width: 5rem;
+  height: 2px;
+  border-radius: 2px;
+}
+
+/* ── Global: list items with rose dash (all layouts) ── */
+.slidev-page li {
+  padding-left: 20px;
+  position: relative;
+}
+.slidev-page li::before {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 10px;
+  height: 2px;
+  background: var(--c-highlight);
+  border-radius: 1px;
+  opacity: 0.55;
+}
+
+/* ── Content: blockquote left bar ── */
+.slidev-page .content-layout blockquote::before {
+  width: 4px;
+  border-radius: 2px;
+}
+.slidev-page .content-layout blockquote {
+  font-size: 17px;
+  padding: 20px 28px;
+}
+
+/* ── Content: code block warm shadow + generous padding ── */
+.slidev-page .content-layout pre {
+  box-shadow: 0 4px 16px oklch(35% 0.02 20 / 0.06), 0 1px 3px oklch(35% 0.02 20 / 0.03);
+  padding: 20px 24px !important;
+}
+
+/* ── Content: card generous padding ── */
+.slidev-page .content-layout .content-card {
+  padding: 24px 28px;
+}
+
+/* ── Content: h2 section rhythm ── */
+.slidev-page .content-layout h2 {
+  margin-top: 28px;
+}
+
+/* ── Content: inline code warmth ── */
+.slidev-page .content-layout :not(pre) > code {
+  background: color-mix(in srgb, var(--c-highlight) 8%, var(--c-code-bg));
+}
+
+/* ── Metrics: tighter tracking on values ── */
+.slidev-page .metrics-layout .metric-value {
+  letter-spacing: -0.04em;
+}
+
+/* ── Feature-grid: card hover border warmth ── */
+.slidev-page .feature-grid-layout .card:hover {
+  border-color: var(--c-highlight);
+  transform: translateY(-3px);
+}
+
+/* ── Feature-grid: card tag pill warmth ── */
+.slidev-page .feature-grid-layout .card-tag {
+  background: color-mix(in srgb, var(--c-highlight) 14%, transparent);
+}
+
+/* ── Timeline: softer active dot glow ── */
+.slidev-page .timeline-layout .step.active .step-dot,
+.slidev-page .timeline-layout .step-dot.active {
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--c-highlight) 20%, transparent);
+}
+
+/* ── Big-code: warm code window shadow ── */
+.slidev-page .big-code-layout pre {
+  box-shadow: 0 4px 16px oklch(35% 0.02 20 / 0.06);
+}
+
+/* ── Comparison: center divider warmth ── */
+.slidev-page .comparison-layout .compare-divider {
+  border-color: color-mix(in srgb, var(--c-highlight) 30%, var(--c-card-border));
+  color: var(--c-highlight);
+}
+
+/* ── Quote: refined attribution line ── */
+.slidev-page .quote-layout .attribution-line {
+  width: 48px;
+  height: 2px;
+  border-radius: 2px;
+}
+.slidev-page .quote-layout blockquote {
+  letter-spacing: -0.015em;
+}
+
+/* ── Two-cols: placeholder warmth ── */
+.slidev-page .two-cols-layout .col-media .placeholder {
+  background: color-mix(in srgb, var(--c-highlight) 4%, var(--c-glass-bg));
+  border-color: color-mix(in srgb, var(--c-highlight) 15%, var(--c-card-border));
+}

@@ -33,6 +33,20 @@ Simply ask: *"Make me slides for [topic]"*
 
 The interview begins. Trust the process.
 
+## URL Style Import
+
+If the user provides a reference URL — *"make it feel like this site"* — follow
+`references/style-import.md`. Run the opt-in extractor with a local Chrome:
+
+```bash
+node .claude/skills/deckcraft/tools/style-import.mjs https://example.com --out ./style
+```
+
+From the Deckcraft source repo, use `npm run style -- https://example.com --out ./style`.
+
+Then use `style/style-brief.md` as the design intent and copy the generated
+`style/theme/styles.css` into `deck/theme/`. Do not clone logos or proprietary assets.
+
 ## The Signature
 
 Look for the shimmer:
@@ -49,10 +63,11 @@ That's how you know it was crafted, not generated.
 deck/
 ├── PRESENTATION.md    # Your vision: audience, tone, scope
 ├── slides.md          # The crafted deck
-├── theme/             # Visual system (copied from templates)
-│   ├── styles.css     # Colors, typography
-│   ├── setup.ts       # Font loading
-│   └── layouts/       # Vue components (cover, content, impact, divider)
+├── theme/             # Visual system (composed from shared + chosen theme)
+│   ├── styles.css     # @import base.css + theme tokens + dark mode
+│   ├── base.css       # Shared structural CSS (from themes/shared/)
+│   ├── global-bottom.vue  # Nav overlay (from themes/shared/)
+│   └── layouts/       # 11 Vue components (from themes/shared/layouts/)
 ├── assets/            # Images, diagrams
 └── exports/           # PDF, PPTX, PNG (gitignored)
 ```

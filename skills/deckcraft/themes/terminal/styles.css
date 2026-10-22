@@ -1,25 +1,75 @@
-/* Terminal Theme — Mono headings, bold accent. Systems, infrastructure, backend. */
+/* Terminal Theme — Technical precision. Mono headings, bold accent. Born in server rooms. */
 
-html, body, #app { height: 100%; overflow: hidden; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import '../shared/base.css';
 
 :root {
+  /* ─── Tier 1: Required ─────────────────────────────────────────── */
   --c-canvas: oklch(96% 0 0);
   --c-foreground: oklch(15% 0 0);
   --c-muted: oklch(52% 0 0);
   --c-border: oklch(86% 0 0);
   --c-accent: oklch(55% 0.22 260);
+  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
+  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ─── Tier 2: Theme Personality ─────────────────────────────────── */
+  /* Typography — mono display, sans body, mono labels */
+  --c-display: 'JetBrains Mono', 'Fira Code', monospace;
+  --c-heading: oklch(15% 0 0);
+  --c-heading-style: normal;
+  --c-heading-weight: 700;
+  --c-heading-tracking: -0.02em;
+  --c-tertiary: 'JetBrains Mono', monospace;
+
+  /* Highlight — same as accent (no separate warm tone) */
+  --c-highlight: oklch(55% 0.22 260);
+  --c-highlight-dim: oklch(55% 0.22 260 / 0.1);
+
+  /* Accent derivatives */
   --c-accent-dim: oklch(55% 0.22 260 / 0.08);
   --c-accent-glow: oklch(55% 0.22 260 / 0.12);
-  --c-success: oklch(52% 0.16 155);
-  --c-warning: oklch(58% 0.16 80);
-  --c-danger: oklch(50% 0.19 25);
+
+  /* Code colors */
   --c-code-bg: oklch(93% 0 0);
   --c-code-fg: oklch(16% 0 0);
   --c-code-dot-red: oklch(55% 0.18 20);
   --c-code-dot-yellow: oklch(58% 0.16 85);
   --c-code-dot-green: oklch(52% 0.14 150);
-  --c-font: 'Inter', system-ui, -apple-system, sans-serif;
-  --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Solid surfaces — no glass effect */
+  --c-card-bg: oklch(93% 0 0);
+  --c-card-border: var(--c-border);
+  --c-glass-bg: oklch(93% 0 0);
+  --c-glass-blur: none;
+  --c-glass-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --c-glass-shadow-hover: 0 4px 8px -2px rgb(0 0 0 / 0.12), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+
+  /* Type scale */
+  --c-text-xs: 12px;
+  --c-text-sm: 14px;
+  --c-text-base: 16px;
+  --c-text-lg: 18px;
+  --c-text-xl: 20px;
+  --c-text-2xl: 24px;
+
+  /* Layout-specific display sizes */
+  --c-text-cover: 48px;
+  --c-text-impact: 64px;
+  --c-text-divider: 36px;
+  --c-text-h1: 32px;
+  --c-text-h2: 20px;
+  --c-text-metric-h1: 28px;
+  --c-text-metric-value: 40px;
+
+  /* Spacing */
+  --c-pad-slide: 64px 72px 72px 80px;
+  --c-pad-centered: 48px;
+
+  /* Semantic */
+  --c-success: oklch(52% 0.16 155);
+  --c-warning: oklch(58% 0.16 80);
+  --c-danger: oklch(50% 0.19 25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,16 +78,24 @@ html, body, #app { height: 100%; overflow: hidden; }
     --c-foreground: oklch(94% 0 0);
     --c-muted: oklch(64% 0 0);
     --c-border: oklch(26% 0.003 260);
+
     --c-accent: oklch(68% 0.22 260);
+    --c-highlight: oklch(68% 0.22 260);
+    --c-heading: oklch(94% 0 0);
+
     --c-accent-dim: oklch(68% 0.22 260 / 0.08);
     --c-accent-glow: oklch(68% 0.22 260 / 0.15);
+
+    --c-code-bg: oklch(16% 0.002 260);
+    --c-code-fg: oklch(90% 0 0);
+    --c-card-bg: oklch(18% 0.002 260);
+    --c-glass-bg: oklch(18% 0.002 260);
+
+    --c-glass-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+    --c-glass-shadow-hover: 0 4px 8px -2px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+
     --c-success: oklch(68% 0.16 155);
     --c-warning: oklch(68% 0.16 80);
     --c-danger: oklch(58% 0.16 25);
-    --c-code-bg: oklch(16% 0.002 260);
-    --c-code-fg: oklch(90% 0 0);
   }
 }
-
-.slidev-page { position: relative; background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
-.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; position: relative; }

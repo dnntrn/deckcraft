@@ -24,11 +24,11 @@ Choose System when you want credibility through restraint.
 
 ## Design Principles
 
-- **Inter sans-serif** — Clean, modern, readable
-- **Subtle left-border accents** — Structure without decoration
+- **Inter throughout** — Display, body, and tertiary all use Inter. Different weights create hierarchy.
+- **Semibold headings** — `--c-heading-weight: 600`. Confident, not bold.
+- **Solid surfaces** — No glass effect. Clean opaque cards.
 - **Light canvas** — Neutral, adaptable, professional
 - **Thin rules and borders** — Definition without weight
-- **Radial gradients on impact** — Soft authority
 - **No flourish that doesn't serve** — Pure functionality
 
 ## Best For
@@ -41,23 +41,22 @@ When you need character to be part of the story. When the theme itself should ma
 
 ## Customization
 
-All colors are CSS custom properties:
+All colors and typography are CSS custom properties defined in `styles.css`:
 
 ```css
 --c-canvas        /* Light gray or deep slate */
 --c-foreground    /* Near-black or near-white */
 --c-accent        /* Your brand color */
---c-font          /* Inter + JetBrains Mono */
+--c-heading-weight /* 600 (semibold) */
 ```
-
-Override in `styles.css` or inject tokens during generation.
 
 ## Files
 
-- `styles.css` — CSS variables and reset
-- `setup.ts` — Font loading configuration
-- `layouts/` — Vue components (cover, content, impact, divider)
-- `examples.md` — Sample slides
+- `styles.css` — Theme tokens + `@import '../shared/base.css'` + dark mode overrides
+
+## Shared Foundation
+
+System uses the shared design system in `themes/shared/` — 11 layouts, base CSS, and the 3-tier token contract. Theme personality (Inter throughout, semibold headings, solid surfaces) comes from token values.
 
 ---
 

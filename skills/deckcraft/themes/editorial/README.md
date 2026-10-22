@@ -24,12 +24,12 @@ Choose Editorial when content deserves contemplation.
 
 ## Design Principles
 
-- **Generous whitespace** — 72px padding creates breathing room
-- **Playfair Display serif** — Literary weight without stuffiness
-- **Left-border accent stripe** — Restraint as ornament
-- **Italic subtitles** — Grace notes on every title
-- **No decoration that doesn't serve** — Every element earns place
-- **Radial gradient backgrounds on impact** — Soft drama
+- **Generous whitespace** — 80–96px padding creates breathing room
+- **Playfair Display italic headings** — `--c-heading-style: italic`. Literary weight without stuffiness.
+- **Inter body text** — Modern, readable counterpoint to the serif
+- **Solid surfaces** — No glass effect. Warm cream cards with subtle borders.
+- **Left-border accent stripe** — The blockquote accent bar is the only ornament
+- **No decoration that doesn't serve** — Every element earns its place
 
 ## Best For
 
@@ -41,23 +41,24 @@ Dense technical documentation. When you need data density over narrative flow. R
 
 ## Customization
 
-All colors are CSS custom properties:
+All colors and typography are CSS custom properties defined in `styles.css`:
 
 ```css
 --c-canvas        /* Warm paper-white or deep charcoal */
 --c-foreground    /* Primary text */
 --c-accent        /* Your brand color */
---c-font          /* Playfair Display + Inter */
+--c-display       /* Playfair Display (italic headings) */
+--c-heading-style /* italic */
 ```
-
-Override in `styles.css` or inject tokens during generation.
 
 ## Files
 
-- `styles.css` — CSS variables and reset
-- `setup.ts` — Font loading configuration
-- `layouts/` — Vue components (cover, content, impact, divider)
+- `styles.css` — Theme tokens + `@import '../shared/base.css'` + dark mode overrides
 - `examples.md` — Sample slides
+
+## Shared Foundation
+
+Editorial uses the shared design system in `themes/shared/` — 11 layouts, base CSS, and the 3-tier token contract. Theme personality (Playfair italic, generous spacing, solid surfaces) comes from token values.
 
 ---
 

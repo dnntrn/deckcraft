@@ -8,7 +8,7 @@ Talk to your AI naturally. Get slides that don't look like AI made them.
 "make me slides for my Kubernetes pod lifecycle talk"
 "use Cloudflare Kumo's design system, dark theme, 30 minutes"
 "slide 4 is too dense, split it"
-"add a Mermaid state diagram here"
+"add a state diagram here"
 "export to PDF"
 ```
 
@@ -34,8 +34,12 @@ no commands to memorize, no design vocabulary required.
 ### Design system theming + rich theme templates
 
 Pick any design system and a theme template — deckcraft generates the full slide theme:
-- **studio** — Clean, universal. Swiss design. Light/dark. Works with any brand.
-- **nocturne** — Dark technical. Terminal aesthetic. Code-focused.
+- **blush** — Warm sophistication. DM Serif Display italic headings, Montserrat body, frosted glass cards, rose accents.
+- **terminal** — Technical precision. JetBrains Mono bold headings, solid surfaces, code-focused.
+- **editorial** — Literary refinement. Playfair Display italic headings, generous whitespace.
+- **system** — Invisible polish. Inter semibold headings, clean surfaces, all-purpose.
+
+All four themes share a single structural foundation (11 layouts + base CSS + token contract). Each theme defines only its personality tokens.
 
 Token maps pre-extracted for:
 - "Use Kumo" — Cloudflare's component library
@@ -43,20 +47,51 @@ Token maps pre-extracted for:
 - "Use MUI" — Material Design
 - "Use our brand: primary=#1a1a2e, font=Inter"
 
+### Import a style from a URL
+
+Paste a reference site and extract its visual language into a Deckcraft theme:
+
+```bash
+npm run style -- https://stripe.com --out ./style
+```
+
+Output:
+
+```text
+style/
+├── style.json        # computed tokens + DOM geometry
+├── style-brief.md    # human-readable style card
+└── theme/
+    ├── styles.css    # generated Deckcraft theme tokens
+    └── README.md
+```
+
+This v0 reads the rendered CSSOM and DOM geometry — no screenshots. It captures
+palette, typography, surfaces, density, and signature moves, then normalizes them
+for projection. Use `--light` or `--dark` to force a color scheme. Requires Node 22+
+and Chrome/Chromium (`CHROME_PATH` supported).
+
+Style import is opt-in. Deckcraft's normal generation flow still uses bundled
+themes and never fetches a website unless you explicitly run this tool.
+
 ### Zero commands (almost)
 
-Every interaction is natural language. One explicit command exists: `/deckcraft export pdf|pptx|png`.
+Every interaction is natural language. Explicit commands exist only for export
+(`/deckcraft export pdf|pptx|png`) and opting into a URL style import (`npm run style`).
 
 ## Privacy & Security
 
-**Deckcraft is a read-only skill.** It consists entirely of Markdown files that teach
-your AI design principles. It does not:
+**Deckcraft is a read-only skill.** Its normal generation flow consists entirely of
+local Markdown reference files. It does not:
 
-- Store, transmit, or process any user data
-- Make network requests or API calls
+- Store, transmit, or process your slide content
 - Include any tracking, telemetry, or analytics
 - Train on or collect slide content
-- Require an account, API key, or internet connection (beyond initial install)
+- Require an account or API key
+
+The optional `style-import` tool is the one exception: it opens the URL you explicitly
+provide in a local headless browser and writes the extracted style card to your disk.
+It does not upload your deck or use a third-party service.
 
 Your slides, design tokens, and presentation context live in your repository's `deck/`
 directory. They never leave your machine. The AI reads the skill's reference files
@@ -150,6 +185,7 @@ deck/
   - OpenCode, Claude Code, Cursor, Codex CLI, Gemini CLI, GitHub Copilot
 - [Slidev](https://sli.dev) installed in your project (`npm install @slidev/cli`)
 - For export: `playwright-chromium` (`npm install -D playwright-chromium`)
+- For URL style import: Node 22+ and Chrome/Chromium
 
 ## Inspired by
 

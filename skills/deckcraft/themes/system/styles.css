@@ -1,34 +1,98 @@
-/* System Theme — Invisible polish. Cool tones. All-purpose. */
+/* System Theme — Invisible polish. Cool neutral tones. All-purpose, timeless. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import '../shared/base.css';
 
 :root {
+  /* ─── Tier 1: Required ─────────────────────────────────────────── */
   --c-canvas: oklch(98.5% 0 0);
   --c-foreground: oklch(16% 0 0);
   --c-muted: oklch(50% 0 0);
   --c-border: oklch(88% 0 0);
   --c-accent: oklch(55% 0.22 260);
-  --c-accent-dim: oklch(55% 0.22 260 / 0.06);
-  --c-accent-glow: oklch(55% 0.22 260 / 0.10);
-  --c-code-bg: oklch(94% 0 0);
-  --c-code-fg: oklch(18% 0 0);
   --c-font: 'Inter', system-ui, -apple-system, sans-serif;
   --c-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ─── Tier 2: Theme Personality ─────────────────────────────────── */
+  /* Typography — all Inter, semibold headings */
+  --c-display: 'Inter', system-ui, sans-serif;
+  --c-heading: oklch(16% 0 0);
+  --c-heading-style: normal;
+  --c-heading-weight: 600;
+  --c-heading-tracking: -0.02em;
+  --c-tertiary: 'Inter', system-ui, sans-serif;
+
+  /* Highlight — same as accent */
+  --c-highlight: oklch(55% 0.22 260);
+  --c-highlight-dim: oklch(55% 0.22 260 / 0.08);
+
+  /* Accent derivatives */
+  --c-accent-dim: oklch(55% 0.22 260 / 0.06);
+  --c-accent-glow: oklch(55% 0.22 260 / 0.10);
+
+  /* Code colors */
+  --c-code-bg: oklch(94% 0 0);
+  --c-code-fg: oklch(18% 0 0);
+
+  /* Solid surfaces — no glass effect */
+  --c-card-bg: oklch(96% 0 0);
+  --c-card-border: var(--c-border);
+  --c-glass-bg: oklch(96% 0 0);
+  --c-glass-blur: none;
+  --c-glass-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --c-glass-shadow-hover: 0 4px 8px -2px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+
+  /* Type scale */
+  --c-text-xs: 12px;
+  --c-text-sm: 14px;
+  --c-text-base: 16px;
+  --c-text-lg: 18px;
+  --c-text-xl: 20px;
+  --c-text-2xl: 24px;
+
+  /* Layout-specific display sizes */
+  --c-text-cover: 52px;
+  --c-text-impact: 68px;
+  --c-text-divider: 38px;
+  --c-text-h1: 34px;
+  --c-text-h2: 21px;
+  --c-text-metric-h1: 30px;
+  --c-text-metric-value: 42px;
+
+  /* Spacing */
+  --c-pad-slide: 64px 72px 72px 80px;
+  --c-pad-centered: 48px;
+
+  /* Semantic */
+  --c-success: oklch(55% 0.16 155);
+  --c-warning: oklch(60% 0.16 75);
+  --c-danger: oklch(50% 0.18 20);
 }
 
 @media (prefers-color-scheme: dark) {
-html, body, #app { height: 100%; overflow: hidden; }
-
-:root {
+  :root {
     --c-canvas: oklch(16% 0.002 260);
     --c-foreground: oklch(92% 0 0);
     --c-muted: oklch(62% 0 0);
     --c-border: oklch(28% 0 0);
+
     --c-accent: oklch(65% 0.22 260);
+    --c-highlight: oklch(65% 0.22 260);
+    --c-heading: oklch(92% 0 0);
+
     --c-accent-dim: oklch(65% 0.22 260 / 0.06);
     --c-accent-glow: oklch(65% 0.22 260 / 0.10);
+
     --c-code-bg: oklch(22% 0.002 260);
     --c-code-fg: oklch(90% 0 0);
+    --c-card-bg: oklch(22% 0.002 260);
+    --c-glass-bg: oklch(22% 0.002 260);
+
+    --c-glass-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+    --c-glass-shadow-hover: 0 4px 8px -2px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+
+    --c-success: oklch(65% 0.16 155);
+    --c-warning: oklch(68% 0.14 75);
+    --c-danger: oklch(58% 0.16 25);
   }
 }
-
-.slidev-page { position: relative; background: var(--c-canvas); color: var(--c-foreground); font-family: var(--c-font); -webkit-font-smoothing: antialiased; }
-.slidev-layout { box-sizing: border-box; height: 100%; overflow: hidden; position: relative; }

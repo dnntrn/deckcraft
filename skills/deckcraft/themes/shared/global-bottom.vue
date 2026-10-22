@@ -58,7 +58,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
   pointer-events: none;
   font-family: var(--c-mono, monospace);
   font-size: 10px;
-  color: oklch(70% 0 0 / 0.35);
+  color: color-mix(in srgb, var(--c-muted, oklch(70% 0 0)) 50%, transparent);
   transition: opacity 0.3s;
   user-select: none;
 }

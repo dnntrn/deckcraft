@@ -33,10 +33,12 @@ The 1920×1080 boundary is not a limitation—it is freedom. Within these bounds
 
 A theme is not a skin. It is a personality.
 
-- **Terminal** — Technical precision. Born in server rooms, raised by logs.
-- **System** — Invisible polish. Universal, restrained, timeless.
-- **Editorial** — Literary refinement. Space to breathe, elegance in restraint.
-- **Blush** — Warm sophistication. Soft doesn't mean weak.
+- **Terminal** — Technical precision. Born in server rooms, raised by logs. JetBrains Mono headings, bold accent.
+- **System** — Invisible polish. Universal, restrained, timeless. Inter throughout, semibold headings.
+- **Editorial** — Literary refinement. Space to breathe, elegance in restraint. Playfair Display headings, generous whitespace.
+- **Blush** — Warm sophistication. Soft doesn't mean weak. DM Serif Display italic headings, Montserrat body, rose accents.
+
+All themes share a single structural foundation (`themes/shared/`) — 11 layouts, base CSS, and a 3-tier token contract. Each theme defines only its personality tokens (colors, fonts, heading style, spacing, glass vs solid surfaces). See `themes/shared/tokens.md` for the full contract.
 
 Choose with intention. The theme shapes the story.
 
@@ -76,7 +78,7 @@ Before asking, observe. Scan the repository for context:
 *The aesthetic. Choosing the personality and palette.*
 
 4. **Any design system or brand guidelines?** "Use Kumo", "match Vercel", "MUI", or specific values? `[default: none, use theme defaults]`
-5. **Which theme speaks to this?** `editorial` (literary, serif), `terminal` (technical, mono), `system` (polished, universal), `blush` (warm, feminine) `[default: terminal for tech talks, system for business presentations]`
+5. **Which theme speaks to this?** `editorial` (literary, serif), `terminal` (technical, mono), `system` (polished, universal), `blush` (warm, DM Serif Display + Montserrat) `[default: terminal for tech talks, system for business presentations]`
 6. **What to avoid?** Anti-references: "no stock photos", "not like Apple keynotes" `[default: no purple gradients, no stock photos, no emoji titles]`
 7. **Any specific analogies or mental models?** "Explain useEffect like event listeners" `[default: anchor to what the audience already knows from CS fundamentals]`
 
@@ -118,11 +120,15 @@ Once the outline is approved, the craft begins.
 
 2. **Load `references/capacity.md`** — Verify content fits 1920×1080. Split slides if limits exceeded. Never ship scrollbars.
 
-3. **Read `references/design-system-tokens.md`** — Use pre-extracted tokens. Never scrape websites.
+3. **Read `references/design-system-tokens.md`** — Use pre-extracted tokens by default. If the user explicitly asks to match a URL, use the opt-in style import flow in `references/style-import.md` instead of scraping inside the generation loop.
 
-4. **Copy theme template** — From `themes/<theme>/` to `deck/theme/`
+4. **Compose theme directory** — Copy shared foundation + chosen theme:
+   - `themes/shared/base.css` → `deck/theme/base.css`
+   - `themes/shared/layouts/*.vue` → `deck/theme/layouts/*.vue` (all 11 layouts)
+   - `themes/shared/global-bottom.vue` → `deck/theme/global-bottom.vue`
+   - `themes/<chosen>/styles.css` → `deck/theme/styles.css` (rewrite `@import '../shared/base.css'` → `@import './base.css'`)
 
-5. **Inject tokens** — Colors, fonts into `deck/theme/styles.css`
+5. **Override tokens if needed** — If user specified brand colors/fonts, override the theme's tokens in `deck/theme/styles.css`. The theme's `:root` block already defines all Tier 1 + Tier 2 tokens.
 
 6. **Generate `deck/slides.md`** — Using custom layouts with intention
 
@@ -154,14 +160,21 @@ Content here...
 
 All slides use custom Vue components with **scoped styles**. UnoCSS cannot interfere—no cut-offs, no unwanted overrides.
 
-### The Four Layouts
+### The Layouts
 
-| Layout | Purpose | Character |
-|--------|---------|-----------|
-| `cover` | Opening | Title, subtitle, author. Sets the tone. |
-| `content` | Default | Title + body, lists, code. The workhorse. |
-| `impact` | Statement | Centered stat or CTA. Dramatic pause. |
-| `divider` | Transition | "Part 2: The Solution". Creates rhythm. |
+| Layout | Purpose | Character | Key Elements |
+|--------|---------|-----------|--------------|
+| `cover` | Opening | Title, subtitle, author. Sets the tone. | h1, p, .author |
+| `content` | Default | Title + body, lists, code. The workhorse. | h1–h3, p, ul, pre, blockquote, .split, .grid-2/.grid-3 |
+| `impact` | Statement | Centered stat or CTA. Dramatic pause. | h1 (big number), p, .text-sm |
+| `divider` | Transition | "Part 2: The Solution". Creates rhythm. | h1, h2/p |
+| `metrics` | Numbers | KPIs, traction, SLAs — 2–4 big numbers. | .metrics-grid > .metric > .metric-value + .metric-label + .metric-desc |
+| `feature-grid` | Cards | Feature lists, team, pricing — 2/3/4-up cards. | .grid-2/.grid-3/.grid-4 > .card > .card-icon/.card-title/.card-desc/.card-tag |
+| `comparison` | Side-by-side | Before/after, us vs them, v1 vs v2. | .compare > .compare-col × 2, .compare-label, .compare-divider |
+| `two-cols` | Image + text | Screenshot + description, diagram + explanation. | .cols > .col-text + .col-media |
+| `timeline` | Process | Roadmaps, steps, deployment pipelines. | .timeline-steps > .step > .step-dot + .step-title + .step-desc |
+| `big-code` | Full-bleed code | When the code IS the content. | .code-header, pre/code, .text-sm |
+| `quote` | Testimonial | Pull-quote with attribution. | blockquote, .attribution > .attribution-name + .attribution-role |
 
 ### The Split Pattern
 
@@ -248,8 +261,10 @@ See `references/diagrams.md` for patterns: architecture, state machines, sequenc
 
 ### Typography
 
-- Sizes set in scoped layout styles. No global overrides.
-- Title ~42px, body ~22px, code ~16px. Projector-ready.
+- Sizes defined via `--c-text-*` tokens in each theme's `styles.css`. Override per-deck if needed.
+- Type scale: xs(12px) → sm(14px) → base(16px) → lg(18px) → xl(20px) → 2xl(24px) → 3xl(30px) → 4xl(36px) → 5xl(48px) → 7xl(72px)
+- Display sizes per layout: `--c-text-cover`, `--c-text-impact`, `--c-text-divider`, `--c-text-h1`, `--c-text-h2`, `--c-text-metric-h1`, `--c-text-metric-value`
+- Heading style controlled by `--c-heading-style` (italic for blush/editorial, normal for terminal/system) and `--c-heading-weight`
 - Max 6 body lines. Max 65 characters per line.
 - Monospace for code: JetBrains Mono, Fira Code, Cascadia Code.
 
@@ -325,8 +340,13 @@ Content-aware layout selection. See `references/dynamic-features.md` for complet
 | Code + explanation | `content` + `.split` | Side-by-side balance |
 | Big number/stat | `impact` | Dramatic emphasis |
 | Section break | `divider` | Creates rhythm |
-| Process (4+ steps) | `content` + `.varch` | Prevents overflow |
-| Feature list (3-6) | `content` + `.grid-2` | Visual organization |
+| Process (4+ steps) | `timeline` | Visual progression |
+| Feature list (2–4) | `feature-grid` | Card-based organization |
+| Comparison/versus | `comparison` | Side-by-side clarity |
+| Image + text | `two-cols` | Media-context balance |
+| Metrics/KPIs | `metrics` | Big numbers, immediate impact |
+| Full code walkthrough | `big-code` | Maximum code space |
+| Testimonial/quote | `quote` | Social proof, key takeaway |
 
 ### Hidden Capabilities
 
@@ -381,6 +401,7 @@ Requires `playwright-chromium` dev dependency.
 | Capacity limits | `references/capacity.md` | Before generating |
 | Content patterns | `references/content-design.md` | Before generating |
 | Design tokens | `references/design-system-tokens.md` | Before theming |
+| Theme token contract | `themes/shared/tokens.md` | Before theming |
 | Diagram patterns | `references/diagrams.md` | When adding diagrams |
 | Dynamic features | `references/dynamic-features.md` | Before generating |
 | Gallery & recipes | `references/gallery.md` | For inspiration |

@@ -24,12 +24,12 @@ Choose Terminal when you want credibility through technical authenticity.
 
 ## Design Principles
 
-- **Dark canvas with radial vignette** — Absorbs light, focuses attention
-- **JetBrains Mono everywhere** — Even prose feels technical
+- **JetBrains Mono headings** — Bold weight, normal style. Technical rhythm.
+- **Inter body text** — Clean, readable, modern
+- **Solid surfaces** — No glass effect. Opaque cards with clean borders.
+- **Terminal chrome on code** — Red/yellow/green dots frame every code block
 - **Accent colors glow** — Against the dark, they become signal
-- **Terminal chrome on code** — Red/yellow/green dots frame every block
-- **Subtle grid texture** — The blueprint feel of systems design
-- **Dramatic section dividers** — Mono headings at scale
+- **Bold heading weight** — `--c-heading-weight: 700` for impactful titles
 
 ## Best For
 
@@ -41,23 +41,24 @@ Soft launches. Emotional narratives. When you need warmth over precision.
 
 ## Customization
 
-All colors are CSS custom properties:
+All colors and typography are CSS custom properties defined in `styles.css`. Override any token to customize:
 
 ```css
 --c-canvas        /* Dark background */
 --c-foreground    /* Primary text */
 --c-accent        /* Your brand color */
---c-code-bg       /* Terminal window chrome */
+--c-display       /* Heading font (default: JetBrains Mono) */
+--c-heading-weight /* Heading weight (default: 700) */
 ```
-
-Override in `styles.css` or inject tokens during generation.
 
 ## Files
 
-- `styles.css` — CSS variables and reset
-- `setup.ts` — Font loading configuration
-- `layouts/` — Vue components (cover, content, impact, divider)
+- `styles.css` — Theme tokens + `@import '../shared/base.css'` + dark mode overrides
 - `examples.md` — Sample slides
+
+## Shared Foundation
+
+Terminal uses the shared design system in `themes/shared/` — 11 layouts, base CSS, and the 3-tier token contract. Theme personality (mono headings, solid surfaces, bold weight) comes from token values, not CSS overrides.
 
 ---
 

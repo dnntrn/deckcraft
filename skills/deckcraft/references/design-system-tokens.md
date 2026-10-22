@@ -1,6 +1,9 @@
 # Design System Token Maps
 
 Pre-extracted design tokens for popular design systems. No runtime scraping needed.
+
+For an explicit “match this URL” request, use the opt-in
+[style import](./style-import.md) tool instead. This file remains the no-network default.
 The AI reads this file and maps tokens onto a chosen theme template.
 
 ## How to use
@@ -14,7 +17,8 @@ The AI reads this file and maps tokens onto a chosen theme template.
 For design systems not listed here, ask the user for explicit values:
 - Primary/accent color + background preference + font preference
 
-Never fetch a website at runtime to extract tokens.
+Never fetch a website inside the normal generation loop. For an explicit
+“match this URL” request, use the opt-in [style import](./style-import.md) tool.
 
 ---
 
@@ -117,4 +121,5 @@ Derive the full palette from the given anchors:
 6. **Semantic colors** → Standard hues, scaled to match primary chroma
 7. **Font** → Use provided font, or system-ui as default
 
-For a URL to a design system: ask for explicit values. Never fetch.
+For a URL to a design system: use the opt-in [style import](./style-import.md) tool,
+or ask for explicit values.

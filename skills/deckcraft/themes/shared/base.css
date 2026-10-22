@@ -1,0 +1,547 @@
+/*
+  Deckcraft Design System — Base CSS
+  
+  Structural CSS shared by all themes. Consumes design tokens via var(--c-*)
+  with fallbacks for Tier 2 tokens. Themes override by defining their own token
+  values and/or adding theme-specific rules after importing this file.
+  
+  Token contract defined in: themes/shared/tokens.md
+*/
+
+/* ─── Reset & Base ──────────────────────────────────────────────────── */
+
+html, body, #app { height: 100%; overflow: hidden; }
+
+.slidev-page {
+  position: relative;
+  background: var(--c-canvas);
+  color: var(--c-foreground);
+  font-family: var(--c-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.slidev-layout {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── Tier 2 Token Defaults ─────────────────────────────────────────── */
+/* These take effect only if the theme hasn't defined them.             */
+
+:root {
+  /* Typography extensions — fallback to body font and foreground */
+  --c-display: var(--c-display, var(--c-font));
+  --c-heading: var(--c-heading, var(--c-foreground));
+  --c-heading-style: var(--c-heading-style, normal);
+  --c-heading-weight: var(--c-heading-weight, 400);
+  --c-heading-tracking: var(--c-heading-tracking, -0.03em);
+  --c-tertiary: var(--c-tertiary, var(--c-font));
+  --c-highlight: var(--c-highlight, var(--c-accent));
+
+  /* Accent derivatives — fallback to accent with opacity */
+  --c-accent-dim: var(--c-accent-dim, color-mix(in srgb, var(--c-accent) 8%, transparent));
+  --c-accent-glow: var(--c-accent-glow, color-mix(in srgb, var(--c-accent) 18%, transparent));
+
+  /* Code colors */
+  --c-code-bg: var(--c-code-bg, oklch(94% 0 0));
+  --c-code-fg: var(--c-code-fg, oklch(18% 0 0));
+
+  /* Semantic colors */
+  --c-success: var(--c-success, oklch(55% 0.16 155));
+  --c-warning: var(--c-warning, oklch(60% 0.16 75));
+  --c-danger: var(--c-danger, oklch(50% 0.18 20));
+
+  /* Type scale */
+  --c-text-xs: var(--c-text-xs, 0.75rem);
+  --c-text-sm: var(--c-text-sm, 0.875rem);
+  --c-text-base: var(--c-text-base, 1rem);
+  --c-text-lg: var(--c-text-lg, 1.125rem);
+  --c-text-xl: var(--c-text-xl, 1.25rem);
+  --c-text-2xl: var(--c-text-2xl, 1.5rem);
+  --c-text-3xl: var(--c-text-3xl, 1.875rem);
+  --c-text-4xl: var(--c-text-4xl, 2.25rem);
+  --c-text-5xl: var(--c-text-5xl, 3rem);
+  --c-text-7xl: var(--c-text-7xl, 4.5rem);
+
+  /* Layout-specific display sizes — themes override for personality */
+  --c-text-cover: var(--c-text-cover, 3.5rem);     /* 56px — cover h1 */
+  --c-text-impact: var(--c-text-impact, 4.5rem);   /* 72px — impact h1 */
+  --c-text-divider: var(--c-text-divider, 2.5rem);  /* 40px — divider h1 */
+  --c-text-h1: var(--c-text-h1, 2.25rem);           /* 36px — standard slide h1 */
+  --c-text-h2: var(--c-text-h2, 1.375rem);          /* 22px — slide h2 */
+
+  /* Layout-specific content sizes */
+  --c-text-metric-h1: var(--c-text-metric-h1, 2rem);       /* 32px — metrics slide h1 */
+  --c-text-metric-value: var(--c-text-metric-value, 2.75rem); /* 44px — metric value */
+
+  /* Font weights */
+  --c-weight-light: var(--c-weight-light, 300);
+  --c-weight-regular: var(--c-weight-regular, 400);
+  --c-weight-medium: var(--c-weight-medium, 500);
+  --c-weight-semibold: var(--c-weight-semibold, 600);
+  --c-weight-bold: var(--c-weight-bold, 700);
+
+  /* Border radius */
+  --c-radius-xs: var(--c-radius-xs, 0.125rem);
+  --c-radius-sm: var(--c-radius-sm, 0.375rem);
+  --c-radius-md: var(--c-radius-md, 0.75rem);
+  --c-radius-lg: var(--c-radius-lg, 1rem);
+  --c-radius-xl: var(--c-radius-xl, 1.5rem);
+  --c-radius-2xl: var(--c-radius-2xl, 2rem);
+  --c-radius-full: var(--c-radius-full, 9999px);
+
+  /* Shadows */
+  --c-shadow-xs: var(--c-shadow-xs, 0 1px 2px 0 rgb(0 0 0 / 0.05));
+  --c-shadow-sm: var(--c-shadow-sm, 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1));
+  --c-shadow-md: var(--c-shadow-md, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
+  --c-shadow-lg: var(--c-shadow-lg, 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1));
+
+  /* Spacing scale (Tailwind 4px grid) */
+  --c-space-0.5: var(--c-space-0.5, 0.125rem);
+  --c-space-1: var(--c-space-1, 0.25rem);
+  --c-space-1.5: var(--c-space-1.5, 0.375rem);
+  --c-space-2: var(--c-space-2, 0.5rem);
+  --c-space-3: var(--c-space-3, 0.75rem);
+  --c-space-4: var(--c-space-4, 1rem);
+  --c-space-5: var(--c-space-5, 1.25rem);
+  --c-space-6: var(--c-space-6, 1.5rem);
+  --c-space-7: var(--c-space-7, 1.75rem);
+  --c-space-8: var(--c-space-8, 2rem);
+  --c-space-10: var(--c-space-10, 2.5rem);
+  --c-space-12: var(--c-space-12, 3rem);
+  --c-space-14: var(--c-space-14, 3.5rem);
+  --c-space-16: var(--c-space-16, 4rem);
+  --c-space-18: var(--c-space-18, 4.5rem);
+  --c-space-20: var(--c-space-20, 5rem);
+
+  /* Slide padding (composed from spacing scale) */
+  --c-pad-slide: var(--c-pad-slide, 4.5rem 5rem 5rem 5.5rem);
+  --c-pad-centered: var(--c-pad-centered, 3.5rem);
+
+  /* Highlight dim — for tag/label backgrounds */
+  --c-highlight-dim: var(--c-highlight-dim, color-mix(in srgb, var(--c-highlight) 15%, transparent));
+
+  /* Glass effects (themes that don't use glass can override with solid bg) */
+  --c-card-bg: var(--c-card-bg, oklch(100% 0 0 / 0.55));
+  --c-card-border: var(--c-card-border, color-mix(in srgb, var(--c-accent) 15%, transparent));
+  --c-glass-bg: var(--c-glass-bg, oklch(100% 0 0 / 0.55));
+  --c-glass-blur: var(--c-glass-blur, blur(8px));
+  --c-glass-shadow: var(--c-glass-shadow, 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1));
+  --c-glass-shadow-hover: var(--c-glass-shadow-hover, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
+
+  /* Code window chrome */
+  --c-code-dot-red: var(--c-code-dot-red, oklch(55% 0.18 20));
+  --c-code-dot-yellow: var(--c-code-dot-yellow, oklch(58% 0.16 85));
+  --c-code-dot-green: var(--c-code-dot-green, oklch(52% 0.16 155));
+}
+
+/* ─── Heading Styles ────────────────────────────────────────────────── */
+/* Base heading styles that work for any theme. Override in theme CSS.  */
+
+h1, h2, h3, h4, h5, h6 { margin: 0; }
+
+/* ─── List Reset ────────────────────────────────────────────────────── */
+/* All themes use plain lists without bullets or numbers.              */
+
+ul, ol { list-style: none; padding-left: 0; }
+li::before, li::marker { content: none; display: none; }
+
+/* ─── Emphasis Pattern ──────────────────────────────────────────────── */
+/* em in slides = accent-colored bold + decorative underline, not      */
+/* traditional italic. Themes override --c-highlight for the underline  */
+/* color. theme-specific CSS can change this behavior.                  */
+
+em {
+  font-style: normal;
+  font-weight: var(--c-weight-bold);
+  color: var(--c-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--c-highlight);
+}
+
+strong { font-weight: var(--c-weight-semibold); color: var(--c-accent); }
+
+a {
+  color: var(--c-accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--c-accent) 30%, transparent);
+}
+
+/* ─── Grid Patterns ────────────────────────────────────────────────── */
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--c-space-12, 3rem);
+  min-height: 0;
+}
+.split > * { overflow: hidden; min-width: 0; min-height: 0; }
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--c-space-5, 1.25rem);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--c-space-5, 1.25rem);
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--c-space-4, 1rem);
+}
+
+/* ─── Card Pattern ─────────────────────────────────────────────────── */
+
+.card {
+  background: var(--c-card-bg);
+  border: 1px solid var(--c-card-border);
+  border-radius: var(--c-radius-lg, 1rem);
+  padding: var(--c-space-6, 1.5rem);
+  box-shadow: var(--c-glass-shadow);
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.card:hover {
+  box-shadow: var(--c-glass-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.card-title {
+  font-family: var(--c-display, var(--c-font));
+  font-weight: var(--c-weight-regular, 400);
+  font-size: var(--c-text-xl, 1.25rem);
+  color: var(--c-foreground);
+  margin-bottom: var(--c-space-2, 0.5rem);
+  line-height: 1.3;
+}
+
+.card-desc {
+  font-family: var(--c-font);
+  font-size: var(--c-text-sm, 0.875rem);
+  line-height: 1.5;
+  color: var(--c-muted);
+  margin: 0;
+}
+
+.card-icon {
+  font-size: 1.75rem;
+  margin-bottom: var(--c-space-3, 0.75rem);
+  color: var(--c-highlight);
+}
+
+.card-tag {
+  display: inline-block;
+  font-family: var(--c-tertiary, var(--c-font));
+  font-size: var(--c-text-xs, 0.75rem);
+  font-weight: var(--c-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: var(--c-tracking-uppercase, 0.08em);
+  color: var(--c-accent);
+  background: color-mix(in srgb, var(--c-highlight) 12%, transparent);
+  padding: 0.1875rem 0.625rem;
+  border-radius: var(--c-radius-full, 9999px);
+  margin-bottom: var(--c-space-3, 0.75rem);
+}
+
+/* ─── Metrics Pattern ───────────────────────────────────────────────── */
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--c-space-6, 1.5rem);
+  width: 100%;
+  max-width: 62.5rem;
+  margin: 0 auto;
+  position: relative;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.75rem 1.5rem;
+  background: var(--c-card-bg);
+  border: 1px solid var(--c-card-border);
+  border-radius: var(--c-radius-lg, 1rem);
+  box-shadow: var(--c-glass-shadow);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.metric:hover {
+  box-shadow: var(--c-glass-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.metric-value {
+  font-family: var(--c-display, var(--c-font));
+  font-size: var(--c-text-5xl, 3rem);
+  font-weight: var(--c-weight-regular, 400);
+  line-height: 1;
+  letter-spacing: var(--c-tracking-tight, -0.03em);
+  color: var(--c-accent);
+  margin: 0 0 var(--c-space-2, 0.5rem) 0;
+}
+
+.metric-label {
+  font-family: var(--c-tertiary, var(--c-font));
+  font-size: var(--c-text-xs, 0.75rem);
+  font-weight: var(--c-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: var(--c-tracking-uppercase, 0.1em);
+  color: var(--c-muted);
+  text-align: center;
+}
+
+.metric-desc {
+  font-family: var(--c-font);
+  font-size: var(--c-text-sm, 0.875rem);
+  line-height: 1.45;
+  color: var(--c-muted);
+  text-align: center;
+  margin-top: var(--c-space-1.5, 0.375rem);
+}
+
+/* ─── Comparison Pattern ────────────────────────────────────────────── */
+
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.compare-col {
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+}
+
+.compare-col:first-child {
+  border-right: 1px solid var(--c-border);
+}
+
+.compare-label {
+  font-family: var(--c-tertiary, var(--c-font));
+  font-size: var(--c-text-xs, 0.75rem);
+  font-weight: var(--c-weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: var(--c-tracking-uppercase, 0.1em);
+  color: var(--c-muted);
+  margin: 0 0 1rem 0;
+}
+
+.compare-label.accent {
+  color: var(--c-highlight);
+}
+
+.compare-divider {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-card-bg);
+  border-radius: var(--c-radius-full, 9999px);
+  font-family: var(--c-tertiary, var(--c-font));
+  font-size: var(--c-text-xs, 0.75rem);
+  font-weight: var(--c-weight-semibold, 600);
+  color: var(--c-muted);
+  z-index: 1;
+}
+
+/* ─── Timeline Pattern ──────────────────────────────────────────────── */
+
+.timeline-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  margin: auto 0;
+  width: 100%;
+  position: relative;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 15rem;
+  position: relative;
+}
+
+.step-dot {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: var(--c-radius-full, 9999px);
+  background: var(--c-card-bg);
+  border: 2px solid var(--c-border);
+  margin-bottom: var(--c-space-3.5, 0.875rem);
+  flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.step.active .step-dot,
+.step-dot.active {
+  background: var(--c-highlight);
+  border-color: var(--c-highlight);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-highlight) 25%, transparent);
+}
+
+.step-line {
+  position: absolute;
+  top: 0.4375rem;
+  left: calc(50% + 0.4375rem);
+  width: calc(100% - 0.875rem);
+  height: 2px;
+  background: var(--c-border);
+}
+
+.step:last-child .step-line { display: none; }
+
+.step-title {
+  font-family: var(--c-display, var(--c-font));
+  font-size: var(--c-text-base, 1rem);
+  font-weight: var(--c-weight-regular, 400);
+  color: var(--c-foreground);
+  text-align: center;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.3;
+}
+
+.step.active .step-title {
+  color: var(--c-accent);
+}
+
+.step-desc {
+  font-family: var(--c-tertiary, var(--c-font));
+  font-size: var(--c-text-sm, 0.875rem);
+  line-height: 1.4;
+  color: var(--c-muted);
+  text-align: center;
+  margin: 0;
+  max-width: 11.25rem;
+}
+
+/* ─── Flow Diagram Pattern ──────────────────────────────────────────── */
+
+.vflow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--c-space-1.5, 0.375rem);
+  margin: var(--c-space-4, 1rem) 0;
+  max-height: 32.5rem;
+  overflow-y: auto;
+}
+
+.vflow > .node {
+  padding: 0.75rem 1.625rem;
+  background: var(--c-code-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--c-radius-md, 0.75rem);
+  font-family: var(--c-mono);
+  font-size: 0.9375rem;
+  color: var(--c-foreground);
+  white-space: nowrap;
+}
+
+.vflow > .node-accent {
+  border-color: var(--c-highlight);
+  background: var(--c-accent-dim);
+  color: var(--c-accent);
+  font-weight: var(--c-weight-semibold, 600);
+}
+
+.vflow > .varr {
+  color: var(--c-accent);
+  font-size: var(--c-text-base, 1rem);
+  line-height: 1;
+  opacity: 0.5;
+}
+
+/* ─── Code Styles ────────────────────────────────────────────────────── */
+
+pre {
+  background: var(--c-code-bg) !important;
+  border: 1px solid var(--c-border);
+  border-radius: var(--c-radius-md, 0.75rem);
+  padding: 1.125rem 1.375rem !important;
+  margin: var(--c-space-3, 0.75rem) 0;
+  font-family: var(--c-mono);
+  font-size: var(--c-text-sm, 0.875rem);
+  line-height: 1.55;
+  overflow: auto;
+}
+
+pre code {
+  background: transparent !important;
+  color: var(--c-code-fg);
+  padding: 0;
+  font-family: var(--c-mono);
+  font-size: var(--c-text-sm, 0.875rem);
+}
+
+:not(pre) > code {
+  background: color-mix(in srgb, var(--c-accent) 6%, var(--c-code-bg));
+  color: var(--c-accent);
+  padding: 0.1875rem 0.625rem;
+  border-radius: var(--c-radius-sm, 0.375rem);
+  font-family: var(--c-mono);
+  font-size: 0.86em;
+  border: 1px solid color-mix(in srgb, var(--c-accent) 15%, transparent);
+}
+
+/* ─── Table Styles ───────────────────────────────────────────────────── */
+
+table { border-collapse: collapse; font-size: var(--c-text-base, 1rem); margin: var(--c-space-3.5, 0.875rem) 0; }
+thead { border-bottom: 2px solid var(--c-accent); }
+th { text-align: left; font-weight: var(--c-weight-semibold, 600); color: var(--c-muted); padding: 0.625rem 0.875rem; font-family: var(--c-tertiary, var(--c-font)); font-size: var(--c-text-xs, 0.75rem); text-transform: uppercase; letter-spacing: var(--c-tracking-uppercase, 0.08em); }
+td { padding: 0.5rem 0.875rem; border-bottom: 1px solid var(--c-border); }
+tr:last-child td { border-bottom: none; }
+
+/* ─── Blockquote ─────────────────────────────────────────────────────── */
+
+blockquote {
+  border: none;
+  padding: 1.125rem 1.5rem;
+  margin: var(--c-space-3.5, 0.875rem) 0;
+  color: var(--c-foreground);
+  font-family: var(--c-display, var(--c-font));
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  font-style: italic;
+  background: var(--c-card-bg);
+  border-radius: var(--c-radius-lg, 1rem);
+  position: relative;
+}
+blockquote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.875rem;
+  bottom: 0.875rem;
+  width: 3px;
+  border-radius: var(--c-radius-xs, 0.125rem);
+  background: var(--c-highlight);
+}
+
+/* ─── Small Text ────────────────────────────────────────────────────── */
+
+small, .text-sm {
+  font-size: var(--c-text-sm, 0.875rem);
+  color: var(--c-muted);
+  font-family: var(--c-tertiary, var(--c-font));
+}

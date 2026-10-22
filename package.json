@@ -5,6 +5,12 @@
   "type": "module",
   "license": "MIT",
   "repository": "github.com/dnntrn/deckcraft",
+  "bin": {
+    "deckcraft-style": "./skills/deckcraft/tools/style-import.mjs"
+  },
+  "scripts": {
+    "style": "node skills/deckcraft/tools/style-import.mjs"
+  },
   "files": [
     "skills/",
     ".opencode/",

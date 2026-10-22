@@ -5,8 +5,11 @@
 
 ## Never Scrape Websites at Runtime
 
-Do NOT fetch websites to extract design tokens. All runtime scraping has been removed.
-Reasons: network latency, enterprise firewall blocks, rate limiting, inconsistent results.
+Do NOT fetch websites during normal deck generation. All runtime scraping has been removed
+from the generation loop. If the user explicitly asks to match a URL, use the opt-in
+[style import](./style-import.md) tool instead.
+Reasons for the default: network latency, enterprise firewall blocks, rate limiting,
+inconsistent results.
 
 Instead:
 1. Read `references/design-system-tokens.md` for Kumo, Vercel, MUI, etc.
@@ -42,8 +45,8 @@ When the user provides explicit values instead of a system name:
 ### Handling a URL
 
 If user says "match our site at example.com":
-1. Do NOT fetch the URL (enterprise constraints, network latency)
-2. Ask the user to paste relevant CSS custom properties or describe the palette
+1. Prefer the opt-in [style import](./style-import.md) tool when the environment has Chrome
+2. Otherwise ask the user to paste relevant CSS custom properties or describe the palette
 3. If they provide explicit values, derive from those instead
 
 ## Color Strategy for Slides
