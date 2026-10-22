@@ -21,20 +21,30 @@ and **DOM geometry**, and writes:
 style/
 ├── style.json        # full style card + raw computed samples
 ├── style-brief.md    # human/agent-readable summary
-└── theme/
-    ├── styles.css    # Deckcraft token overrides
-    └── README.md
+├── theme/
+│   ├── styles.css    # Deckcraft token overrides
+│   └── README.md
+├── reference/        # with --screenshots
+│   ├── viewport.png
+│   └── full-page.png
+└── sample/           # with --preview
+    ├── slides.md
+    ├── README.md
+    └── theme/        # generated theme + shared layouts, ready for Slidev
 ```
 
-It does **not** take screenshots yet. It captures:
+By default it does **not** take screenshots. Pass `--screenshots` to save reference
+images for human or vision review. It captures:
 
 - palette (canvas, ink, muted, border, accent, card, code)
 - font families and heading treatment
 - type sizes and density
 - surfaces: radius, shadow, glass, borders
 - composition: content width, grid/flex count, media count
-- signature moves (oversized type, hairline rules, rounded cards, dark canvas, etc.)
-- caveats (gradient backgrounds, licensed fonts, single-page sampling)
+- **motifs**: gradients, glows, pseudo-element shapes, rules, patterns, blur, clip shapes
+- **motion**: live animations, keyframes, transitions, JS libraries, scroll-driven elements
+- **layouts**: split, asymmetric split, grid, bento, centered, steps, narrow measure, hero
+- signature moves and caveats
 
 ---
 
@@ -61,6 +71,8 @@ Options:
 --light             Emulate prefers-color-scheme: light
 --timeout <ms>      Page load timeout (default: 30000)
 --wait <ms>         Extra wait after load for client-rendered pages (default: 800)
+--preview           Generate sample/slides.md and a ready-to-run Slidev theme
+--screenshots       Save viewport and full-page reference screenshots
 ```
 
 Requires Node 22+ and Chrome/Chromium. Set `CHROME_PATH` if the browser is not in a
@@ -109,14 +121,30 @@ standard location.
 - Respect robots/ToS when running against third-party sites.
 - Normalize contrast and minimum type sizes for a projector. A reference can be
   beautiful on a laptop and unreadable from row 20.
+- The generated theme uses the captured color mode. Run again with `--dark` or `--light`
+  if you need the other variant.
 - Treat the output as a **style card**, not a pixel-perfect clone.
 
 ---
 
-## What v1 should add
+## Motifs, motion, and layouts
 
-- Screenshot capture and a vision-based brief for composition/mood
+**Motifs** are the visual grammar: gradients, glows, hairlines, pseudo-element shapes,
+patterns, blur, clip paths, and decorative SVG. Use 2–3 of them. Copying every decoration
+is how a deck starts to look like a costume.
+
+**Motion** is distilled from live animations, CSS keyframes, transitions, and detected
+libraries. Translate it into slide entrances and reveals. Do not copy scroll choreography
+or hover effects literally; those belong to the website, not the stage.
+
+**Layouts** are page archetypes derived from DOM geometry: split, asymmetric split,
+grid, bento, centered, steps, narrow measure, hero. Map them to Deckcraft's composition
+family. A website's layout is evidence, not a template.
+
+## What v0.7 should add
+
+- Vision-assisted brief from the optional screenshots
 - Multi-page sampling (home, product, docs, blog)
-- A rendered deck preview
 - A screenshot critic that compares the generated deck to the reference
 - Font substitution suggestions with open alternatives
+- Motion previews in the sample deck

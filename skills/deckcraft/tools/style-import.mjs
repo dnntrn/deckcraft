@@ -19,8 +19,9 @@ import path from 'node:path';
 import net from 'node:net';
 import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
+import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── CLI ──────────────────────────────────────────────────────────────────
@@ -34,6 +35,8 @@ const { values, positionals } = parseArgs({
     light: { type: 'boolean', default: false },
     timeout: { type: 'string', default: '30000' },
     wait: { type: 'string', default: '800' },
+    preview: { type: 'boolean', default: false },
+    screenshots: { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -51,6 +54,8 @@ Options:
   --light             Emulate prefers-color-scheme: light
   --timeout <ms>      Page load timeout (default: 30000)
   --wait <ms>         Extra wait after load for client-rendered pages (default: 800)
+  --preview           Generate a sample deck in <out>/sample
+  --screenshots       Save reference screenshots in <out>/reference
   -h, --help          Show this help
 
 Requires Chrome/Chromium. Set CHROME_PATH if it is not in a standard location.
@@ -392,6 +397,7 @@ function extractPage() {
   const allElements = Array.from(document.querySelectorAll('body *')).slice(0, MAX_ELEMENTS);
   const palette = new Map();
   const accentCandidates = new Map();
+  const motifs = new Map();
   const radii = new Map();
   const shadows = new Map();
   const spacings = new Map();
@@ -417,8 +423,22 @@ function extractPage() {
     addToMap(palette, color.hex, weight);
   }
 
+  function addMotif(type, signature, sample, weight = 1) {
+    const key = `${type}|${String(signature).slice(0, 90)}`;
+    const current = motifs.get(key) || {
+      type,
+      signature: String(signature).slice(0, 120),
+      sample: String(sample || '').slice(0, 200),
+      count: 0,
+      weight: 0,
+    };
+    current.count += 1;
+    current.weight += weight;
+    motifs.set(key, current);
+  }
+
   for (const element of allElements) {
-    if (!isVisible(element)) continue;
+    if (!isVisible(element) || !(element instanceof HTMLElement)) continue;
     counted += 1;
     const style = getComputedStyle(element);
     const rect = element.getBoundingClientRect();
@@ -453,6 +473,80 @@ function extractPage() {
     if (style.display === 'flex') flexCount += 1;
     if (/mono|code|courier|consolas|menlo/i.test(style.fontFamily)) monoCount += 1;
 
+    const backgroundImage = style.backgroundImage;
+    if (backgroundImage && backgroundImage !== 'none') {
+      if (/gradient\(/i.test(backgroundImage)) {
+        addMotif('gradient', backgroundImage.slice(0, 90), backgroundImage, 2);
+      } else if (/url\(/i.test(backgroundImage)) {
+        addMotif('image-texture', 'background-image', 'background-image: url(...)', 1);
+      }
+      const patternSize =
+        style.backgroundSize && !/cover|contain|100%|auto/i.test(style.backgroundSize);
+      if (
+        style.backgroundRepeat &&
+        style.backgroundRepeat !== 'no-repeat' &&
+        (/url\(|repeating-/i.test(backgroundImage) || patternSize)
+      ) {
+        addMotif('pattern', `${style.backgroundRepeat} ${style.backgroundSize}`, backgroundImage.slice(0, 120), 1);
+      }
+    }
+
+    if (style.boxShadow && style.boxShadow !== 'none') {
+      if (/(?:^|,\s*)0(?:px)?\s+0(?:px)?\s+\d+(?:\.\d+)?px/.test(style.boxShadow)) {
+        addMotif('glow', 'zero-offset blur', style.boxShadow.slice(0, 160), 2);
+      } else {
+        addMotif('elevation', 'offset shadow', style.boxShadow.slice(0, 160), 1);
+      }
+    }
+
+    if (borderWidth > 0 && style.borderTopStyle !== 'none') {
+      if (style.borderTopStyle === 'dashed' || style.borderTopStyle === 'dotted') {
+        addMotif('dashed-rule', style.borderTopStyle, `${style.borderTopWidth} ${style.borderTopStyle}`, 1);
+      } else if (borderWidth <= 1.5) {
+        addMotif('hairline-rule', '1px rule', `${style.borderTopWidth} solid`, 1);
+      } else {
+        addMotif('border', 'solid border', `${style.borderTopWidth} solid`, 1);
+      }
+    }
+
+    const radiusValue = Number.parseFloat(style.borderRadius) || 0;
+    if (radiusValue > 20) addMotif('pill', 'fully rounded', 'border-radius: 9999px', 1);
+    else if (radiusValue > 0) addMotif('rounded-corner', 'rounded surface', style.borderRadius, 1);
+
+    if (style.backdropFilter && style.backdropFilter !== 'none') {
+      addMotif('glass', 'backdrop blur', style.backdropFilter, 2);
+    }
+    const blurMatch = style.filter && style.filter.match(/blur\(([\d.]+)px\)/i);
+    if (blurMatch && Number(blurMatch[1]) > 0.5) {
+      addMotif('blur', 'filter blur', style.filter, 1);
+    }
+    if (style.clipPath && style.clipPath !== 'none') {
+      addMotif('clip-shape', 'clipped geometry', style.clipPath, 1);
+    }
+    if (style.maskImage && style.maskImage !== 'none') {
+      addMotif('mask', 'masked geometry', style.maskImage, 1);
+    }
+    if (style.mixBlendMode && style.mixBlendMode !== 'normal') {
+      addMotif('blend', 'blend mode', style.mixBlendMode, 1);
+    }
+    if (style.textShadow && style.textShadow !== 'none') {
+      addMotif('text-glow', 'text shadow', style.textShadow.slice(0, 120), 1);
+    }
+    if (style.writingMode && style.writingMode !== 'horizontal-tb') {
+      addMotif('vertical-type', 'vertical writing', style.writingMode, 1);
+    }
+    if (style.transform && style.transform !== 'none' && /rotate/i.test(style.transform)) {
+      addMotif('rotated', 'rotated element', style.transform.slice(0, 120), 1);
+    }
+    if (style.position === 'fixed') addMotif('fixed-overlay', 'fixed layer', 'position: fixed', 1);
+    if (style.position === 'sticky') addMotif('sticky-element', 'sticky layer', 'position: sticky', 1);
+    if (
+      /(auto|scroll)/.test(style.overflowX) &&
+      element.scrollWidth > element.clientWidth + 4
+    ) {
+      addMotif('horizontal-scroll', 'horizontal overflow', 'overflow-x: scroll', 2);
+    }
+
     const tag = element.tagName.toLowerCase();
     const className = typeof element.className === 'string' ? element.className : '';
     const looksLikeAccent =
@@ -475,6 +569,359 @@ function extractPage() {
   imageCount = Array.from(document.querySelectorAll('img, picture, video, canvas')).filter(
     isVisible,
   ).length;
+
+  const pseudoTargets = allElements
+    .filter(
+      (element) =>
+        isVisible(element) &&
+        (!element.textContent.trim() || element.getAttribute('aria-hidden') === 'true'),
+    )
+    .slice(0, 300);
+
+  for (const element of pseudoTargets) {
+    for (const pseudo of ['::before', '::after']) {
+      let pseudoStyle;
+      try {
+        pseudoStyle = getComputedStyle(element, pseudo);
+      } catch {
+        continue;
+      }
+      if (!pseudoStyle || pseudoStyle.content === 'none' || pseudoStyle.content === 'normal') {
+        continue;
+      }
+
+      const pseudoBg = pseudoStyle.backgroundImage;
+      const pseudoColor = normalizeColor(pseudoStyle.backgroundColor);
+      const pseudoBorder = Number.parseFloat(pseudoStyle.borderTopWidth) || 0;
+      const hasVisual =
+        (pseudoBg && pseudoBg !== 'none') ||
+        (pseudoColor && pseudoColor.a > 0.05) ||
+        pseudoBorder > 0 ||
+        (pseudoStyle.clipPath && pseudoStyle.clipPath !== 'none') ||
+        (pseudoStyle.maskImage && pseudoStyle.maskImage !== 'none');
+
+      if (!hasVisual) continue;
+
+      if (pseudoBg && /gradient\(/i.test(pseudoBg)) {
+        addMotif('pseudo-gradient', pseudo, pseudoBg.slice(0, 160), 2);
+      } else if (pseudoBg && /url\(/i.test(pseudoBg)) {
+        addMotif('pseudo-image', pseudo, 'background-image: url(...)', 1);
+      } else if (pseudoColor && pseudoColor.a > 0.05) {
+        addMotif('pseudo-shape', pseudo, `background: ${pseudoColor.hex}`, 1);
+      } else if (pseudoBorder > 0) {
+        addMotif('pseudo-rule', pseudo, `${pseudoBorder}px ${pseudoStyle.borderTopStyle}`, 1);
+      }
+
+      if (pseudoStyle.boxShadow && pseudoStyle.boxShadow !== 'none') {
+        addMotif('pseudo-shadow', pseudo, pseudoStyle.boxShadow.slice(0, 160), 1);
+      }
+    }
+  }
+
+  const svgCount = Array.from(document.querySelectorAll('svg')).filter(isVisible).length;
+  if (svgCount > 4) {
+    addMotif('inline-svg', 'icon or illustration system', `${svgCount} svg elements`, 1);
+  }
+  if (document.querySelector('linearGradient, radialGradient')) {
+    addMotif('svg-gradient', 'gradient fills', 'linearGradient/radialGradient', 1);
+  }
+
+  function collectMotion() {
+    const animations = [];
+    const animationSeen = new Set();
+
+    function summarizeFrames(frames) {
+      return frames.slice(0, 12).map((frame) => {
+        const out = { offset: frame.offset, easing: frame.easing };
+        for (const key of [
+          'opacity',
+          'transform',
+          'filter',
+          'backgroundColor',
+          'color',
+          'width',
+          'height',
+          'clipPath',
+        ]) {
+          if (frame[key] != null) out[key] = String(frame[key]).slice(0, 140);
+        }
+        return out;
+      });
+    }
+
+    let liveAnimations = [];
+    try {
+      liveAnimations = document.getAnimations ? document.getAnimations() : [];
+    } catch {
+      liveAnimations = [];
+    }
+
+    for (const animation of liveAnimations.slice(0, 100)) {
+      const effect = animation.effect;
+      if (!effect || typeof effect.getKeyframes !== 'function') continue;
+
+      let timing;
+      let frames;
+      try {
+        timing = effect.getTiming();
+        frames = summarizeFrames(effect.getKeyframes());
+      } catch {
+        continue;
+      }
+
+      const properties = Array.from(
+        new Set(
+          frames.flatMap((frame) =>
+            Object.keys(frame).filter((key) => key !== 'offset' && key !== 'easing'),
+          ),
+        ),
+      );
+      const name = String(
+        animation.animationName || animation.transitionProperty || animation.id || 'animation',
+      ).slice(0, 80);
+      const key = `${name}|${timing.duration}|${timing.easing}|${JSON.stringify(frames)}`;
+      if (animationSeen.has(key)) continue;
+      animationSeen.add(key);
+
+      const text = JSON.stringify(frames).toLowerCase();
+      let type = 'animation';
+      if (animation.constructor && animation.constructor.name === 'CSSTransition') type = 'transition';
+      else if (/translate/.test(text)) type = 'slide';
+      else if (/scale/.test(text)) type = 'scale';
+      else if (/blur/.test(text)) type = 'blur';
+      else if (/rotate/.test(text)) type = 'rotate';
+      else if (/opacity/.test(text)) type = 'fade';
+      if (timing.iterations === Infinity) type += '-loop';
+
+      animations.push({
+        type,
+        name,
+        duration: typeof timing.duration === 'number' ? Math.round(timing.duration) : timing.duration,
+        delay: typeof timing.delay === 'number' ? Math.round(timing.delay) : timing.delay,
+        easing: timing.easing,
+        iterations: timing.iterations === Infinity ? 'infinite' : timing.iterations,
+        properties,
+        keyframes: frames,
+      });
+    }
+
+    const keyframes = [];
+    let reducedMotionSupport = false;
+    function walkKeyframes(rules, depth = 0) {
+      if (!rules || depth > 4) return;
+      for (const rule of rules) {
+        try {
+          if (
+            rule.type === CSSRule.MEDIA_RULE &&
+            /prefers-reduced-motion/i.test(rule.conditionText || rule.media?.mediaText || '')
+          ) {
+            reducedMotionSupport = true;
+          }
+          if (rule.type === CSSRule.KEYFRAMES_RULE) {
+            keyframes.push({
+              name: rule.name,
+              frames: Array.from(rule.cssRules).slice(0, 8).map((frame) => ({
+                offset: frame.keyText,
+                css: frame.style.cssText.slice(0, 180),
+              })),
+            });
+          }
+          if (rule.cssRules) walkKeyframes(rule.cssRules, depth + 1);
+        } catch {
+          // Ignore inaccessible rules.
+        }
+      }
+    }
+    for (const sheet of document.styleSheets) {
+      try {
+        walkKeyframes(sheet.cssRules);
+      } catch {
+        // Cross-origin or restricted stylesheet.
+      }
+    }
+
+    const transitions = new Map();
+    for (const element of allElements.slice(0, 1200)) {
+      const style = getComputedStyle(element);
+      if (!style.transitionDuration || style.transitionDuration === '0s') continue;
+      const key = `${style.transitionProperty}|${style.transitionDuration}|${style.transitionTimingFunction}`;
+      transitions.set(key, (transitions.get(key) || 0) + 1);
+    }
+
+    const libraries = new Set();
+    const sources = Array.from(document.scripts)
+      .map((script) => script.src)
+      .join(' ')
+      .toLowerCase();
+    for (const [name, pattern] of [
+      ['gsap', /gsap|scrolltrigger/],
+      ['framer-motion', /framer-motion|framer\.com/],
+      ['motion', /motion-one|@motion/],
+      ['anime.js', /animejs|anime\.min/],
+      ['lenis', /lenis/],
+      ['swiper', /swiper/],
+    ]) {
+      if (pattern.test(sources)) libraries.add(name);
+    }
+    if (window.gsap || window.ScrollTrigger) libraries.add('gsap');
+    if (window.anime) libraries.add('anime.js');
+    if (window.Lenis) libraries.add('lenis');
+
+    const scrollDriven = allElements.filter((element) => {
+      try {
+        const timeline = getComputedStyle(element).animationTimeline;
+        return timeline && timeline !== 'auto' && timeline !== 'none';
+      } catch {
+        return false;
+      }
+    }).length;
+
+    return {
+      animations: animations.slice(0, 12),
+      keyframes: keyframes.slice(0, 16),
+      transitions: Array.from(transitions.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([key, count]) => {
+          const [property, duration, easing] = key.split('|');
+          return { property, duration, easing, count };
+        }),
+      libraries: Array.from(libraries),
+      scrollDriven,
+      reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      reducedMotionSupport,
+    };
+  }
+
+  function detectLayouts() {
+    const results = [];
+    const seen = new Set();
+    const candidates = Array.from(
+      document.querySelectorAll(
+        'main, header, section, article, [class*="hero"], [class*="grid"], [class*="bento"], [class*="feature"]',
+      ),
+    )
+      .filter((element) => element instanceof HTMLElement && isVisible(element))
+      .slice(0, 120);
+
+    function addLayout(type, element, rect, details) {
+      const key = `${type}|${Math.round(rect.width / 50)}|${Math.round(rect.height / 50)}|${details.childCount}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const className =
+        typeof element.className === 'string' ? element.className.trim().slice(0, 60) : '';
+      results.push({
+        type,
+        selector: `${element.tagName.toLowerCase()}${className ? `.${className.split(/\s+/)[0]}` : ''}`,
+        rect: {
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        },
+        ...details,
+      });
+    }
+
+    for (const element of candidates) {
+      const rect = element.getBoundingClientRect();
+      if (rect.width < 280 || rect.height < 140) continue;
+
+      const style = getComputedStyle(element);
+      const className = typeof element.className === 'string' ? element.className : '';
+      const isFirstMainChild =
+        element.parentElement?.tagName === 'MAIN' &&
+        element.parentElement.firstElementChild === element;
+      const isHeroLike = /hero/i.test(className) || isFirstMainChild;
+      const isGridLike = style.display === 'grid' || style.display === 'flex';
+      const children = Array.from(element.children)
+        .filter(isVisible)
+        .map((child) => {
+          const childRect = child.getBoundingClientRect();
+          const childStyle = getComputedStyle(child);
+          return {
+            x: childRect.x,
+            y: childRect.y,
+            width: childRect.width,
+            height: childRect.height,
+            position: childStyle.position,
+          };
+        });
+
+      const details = {
+        childCount: children.length,
+        rows: 0,
+        columns: 0,
+        ratio: 1,
+        gap: style.gap,
+      };
+
+      if (children.length < 2) {
+        if (rect.width < vw * 0.62) addLayout('narrow-measure', element, rect, details);
+        continue;
+      }
+
+      const overlapY = (a, b) =>
+        Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y) >
+        Math.min(a.height, b.height) * 0.55;
+
+      let sideBySide = false;
+      let minWidth = Infinity;
+      let maxWidth = 0;
+      for (let i = 0; i < children.length; i += 1) {
+        const a = children[i];
+        minWidth = Math.min(minWidth, a.width);
+        maxWidth = Math.max(maxWidth, a.width);
+        for (let j = i + 1; j < children.length; j += 1) {
+          const b = children[j];
+          if (overlapY(a, b) && Math.abs(a.x - b.x) > 20) sideBySide = true;
+        }
+      }
+
+      const columns = new Set(children.map((child) => Math.round(child.x / 40))).size;
+      const rows = new Set(children.map((child) => Math.round(child.y / 40))).size;
+      const widthRatio = minWidth > 0 ? maxWidth / minWidth : 1;
+      const areas = children.map((child) => child.width * child.height);
+      const areaRatio = Math.max(...areas) / Math.max(Math.min(...areas), 1);
+
+      details.rows = rows;
+      details.columns = columns;
+      details.ratio = Math.round(widthRatio * 100) / 100;
+
+      if (sideBySide) {
+        addLayout(widthRatio > 1.5 ? 'asymmetric-split' : 'split', element, rect, details);
+      }
+      if (isGridLike && children.length >= 3 && (columns > 1 || rows > 1)) {
+        addLayout('grid', element, rect, details);
+      }
+      if (isGridLike && children.length >= 3 && areaRatio > 2.5) {
+        addLayout('bento', element, rect, details);
+      }
+      if (isGridLike && children.length >= 3 && rows === 1 && maxWidth < 260) {
+        addLayout('steps', element, rect, details);
+      }
+      if (rect.width < vw * 0.62) {
+        addLayout('narrow-measure', element, rect, details);
+      }
+      if (isHeroLike && rect.height > vh * 0.45 && rect.top < vh * 0.3) {
+        addLayout('hero', element, rect, details);
+      }
+      if (style.position === 'sticky') {
+        addLayout('sticky', element, rect, details);
+      }
+      if (element.scrollWidth > element.clientWidth + 4) {
+        addLayout('horizontal-scroll', element, rect, details);
+      }
+      if (
+        (rect.width < vw * 0.8 || style.textAlign === 'center') &&
+        children.every(
+          (child) => Math.abs(child.x + child.width / 2 - (rect.x + rect.width / 2)) < 24,
+        )
+      ) {
+        addLayout('centered', element, rect, details);
+      }
+    }
+
+    return results.slice(0, 12);
+  }
 
   // Sample the page corners to approximate the real canvas color, including
   // layouts where the background lives on a wrapper instead of <body>.
@@ -569,6 +1016,17 @@ function extractPage() {
       .filter(([, value]) => Boolean(value)),
   );
 
+  const motifList = Array.from(motifs.values())
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 16)
+    .map((motif) => ({
+      type: motif.type,
+      signature: motif.signature,
+      sample: motif.sample,
+      count: motif.count,
+      weight: Math.round(motif.weight * 100) / 100,
+    }));
+
   return {
     meta: {
       url: location.href,
@@ -594,6 +1052,9 @@ function extractPage() {
     },
     palette: sortedEntries(palette, 24),
     accentCandidates: sortedEntries(accentCandidates, 20),
+    motifs: motifList,
+    motion: collectMotion(),
+    layouts: detectLayouts(),
     typography: {
       bodyFamily: bodySamples[0]?.fontFamily ?? bodyStyle.fontFamily,
       displayFamily: headings[0]?.fontFamily ?? bodySamples[0]?.fontFamily ?? bodyStyle.fontFamily,
@@ -934,19 +1395,46 @@ function pickRadius(data) {
   return Math.min(radius, 16);
 }
 
-function darker(hex, amount = 0.8) {
-  const hsl = rgbToHsl(hexToRgb(hex));
-  hsl.l = Math.max(0, hsl.l * (1 - amount));
-  return rgbToHex(hslToRgb(hsl));
-}
-
-function lighter(hex, amount = 0.2) {
-  const hsl = rgbToHsl(hexToRgb(hex));
-  hsl.l = Math.min(1, hsl.l + (1 - hsl.l) * amount);
-  return rgbToHex(hslToRgb(hsl));
-}
-
 // ─── Style card + theme generation ────────────────────────────────────────
+
+function summarizeMotion(data) {
+  const raw = data.motion ?? {};
+  const animations = raw.animations ?? [];
+  const labels = new Set();
+
+  for (const animation of animations) {
+    const type = String(animation.type || '');
+    if (type.includes('slide')) labels.add('slide-in reveals');
+    if (type.includes('fade')) labels.add('fade-in reveals');
+    if (type.includes('scale')) labels.add('scale-in reveals');
+    if (type.includes('blur')) labels.add('blur-in reveals');
+    if (type.includes('rotate')) labels.add('rotating accents');
+    if (type.includes('loop')) labels.add('ambient loops');
+    if (type.includes('transition')) labels.add('hover transitions');
+  }
+  if (raw.scrollDriven > 0) labels.add('scroll-driven motion');
+  if ((raw.libraries ?? []).length > 0) labels.add(`JS motion (${raw.libraries.join(', ')})`);
+
+  return {
+    animations: animations.slice(0, 8).map((animation) => ({
+      type: animation.type,
+      name: animation.name,
+      duration: animation.duration,
+      delay: animation.delay,
+      easing: animation.easing,
+      iterations: animation.iterations,
+      properties: animation.properties,
+    })),
+    keyframes: (raw.keyframes ?? []).slice(0, 8),
+    transitions: (raw.transitions ?? []).slice(0, 6),
+    libraries: raw.libraries ?? [],
+    scrollDriven: raw.scrollDriven ?? 0,
+    reducedMotion: raw.reducedMotionSupport || raw.reducedMotion || false,
+    reducedMotionSupport: raw.reducedMotionSupport ?? false,
+    prefersReducedMotion: raw.reducedMotion ?? false,
+    summary: Array.from(labels),
+  };
+}
 
 function buildStyleCard(data) {
   const isDark = luminance(pickCanvas(data, false)) < 0.25;
@@ -958,6 +1446,9 @@ function buildStyleCard(data) {
   const radius = pickRadius(data);
   const glassBlur = data.surfaces?.cardBackdropFilter ?? null;
   const shadow = data.surfaces?.cardShadow ?? null;
+  const motion = summarizeMotion(data);
+  const motifList = data.motifs ?? [];
+  const layouts = data.layouts ?? [];
 
   const signatureMoves = [];
   const baseSize = data.typography?.bodySize || 16;
@@ -976,6 +1467,34 @@ function buildStyleCard(data) {
   if (data.layout?.density === 'compact') signatureMoves.push('dense information');
   if (data.layout?.contentWidth && data.layout.contentWidth < data.meta.viewport.width * 0.72) {
     signatureMoves.push('narrow measure');
+  }
+
+  const motifTypes = new Set(motifList.map((motif) => motif.type));
+  if (motifTypes.has('gradient') || motifTypes.has('pseudo-gradient')) {
+    signatureMoves.push('gradient fields');
+  }
+  if (motifTypes.has('glow') || motifTypes.has('pseudo-shadow')) {
+    signatureMoves.push('soft glow');
+  }
+  if (motifTypes.has('pattern') || motifTypes.has('image-texture') || motifTypes.has('pseudo-image')) {
+    signatureMoves.push('textured surfaces');
+  }
+  if (motifTypes.has('inline-svg') || motifTypes.has('svg-gradient')) {
+    signatureMoves.push('illustrated accents');
+  }
+  if (motion.summary.length > 0) {
+    signatureMoves.push('motion-led');
+  }
+
+  const layoutTypes = new Set(layouts.map((layout) => layout.type));
+  if (layoutTypes.has('asymmetric-split') || layoutTypes.has('split')) {
+    signatureMoves.push('split composition');
+  }
+  if (layoutTypes.has('grid') || layoutTypes.has('bento')) {
+    signatureMoves.push('modular grid');
+  }
+  if (layoutTypes.has('centered')) {
+    signatureMoves.push('centered statements');
   }
 
   return {
@@ -1039,9 +1558,29 @@ function buildStyleCard(data) {
       glassBlur: glassBlur ?? 'none',
       spacings: data.surfaces?.spacings ?? [],
     },
+    motifs: motifList.slice(0, 12).map((motif) => ({
+      type: motif.type,
+      signature: motif.signature,
+      sample: motif.sample,
+      count: motif.count,
+    })),
+    motifTypes: Array.from(motifTypes),
+    motion,
+    layouts: layouts.slice(0, 8).map((layout) => ({
+      type: layout.type,
+      selector: layout.selector,
+      rect: layout.rect,
+      childCount: layout.childCount,
+      rows: layout.rows,
+      columns: layout.columns,
+      ratio: layout.ratio,
+      gap: layout.gap,
+    })),
+    layoutTypes: Array.from(layoutTypes),
     signatureMoves,
     caveats: [
       'Extracted from a single page at one viewport. Sample more pages for a fuller system.',
+      'The generated theme uses the captured color mode. Run again with --dark or --light for another mode.',
       'Computed styles are a snapshot; JS, A/B tests, and responsive states may differ.',
       data.canvas?.backgroundImage
         ? 'The reference uses a background image or gradient; the canvas color is an approximation.'
@@ -1090,6 +1629,13 @@ function buildBrief(card) {
   }
   lines.push('');
 
+  if (card.screenshots?.length) {
+    lines.push('## Reference screenshots');
+    lines.push('');
+    for (const screenshot of card.screenshots) lines.push(`- \`${screenshot}\``);
+    lines.push('');
+  }
+
   lines.push('## Composition');
   lines.push('');
   lines.push(`- Content width: ${composition.contentWidth ?? 'unknown'}px`);
@@ -1106,6 +1652,51 @@ function buildBrief(card) {
     lines.push('');
   }
 
+  if (card.motifs.length > 0) {
+    lines.push('## Motifs');
+    lines.push('');
+    for (const motif of card.motifs) {
+      const sample = motif.sample ? ` — ${motif.sample.replace(/\s+/g, ' ').slice(0, 120)}` : '';
+      lines.push(`- **${motif.type}** ×${motif.count}${sample}`);
+    }
+    lines.push('');
+  }
+
+  if (card.motion.summary.length > 0 || card.motion.animations.length > 0) {
+    lines.push('## Motion');
+    lines.push('');
+    for (const label of card.motion.summary) lines.push(`- ${label}`);
+    if (card.motion.animations.length > 0) {
+      lines.push('');
+      for (const animation of card.motion.animations.slice(0, 5)) {
+        lines.push(
+          `- ${animation.type} — ${animation.duration}ms, ${animation.easing}, delay ${animation.delay}ms`,
+        );
+      }
+    }
+    if (card.motion.libraries.length > 0) {
+      lines.push(`- Libraries detected: ${card.motion.libraries.join(', ')}`);
+    }
+    if (card.motion.scrollDriven > 0) {
+      lines.push(`- Scroll-driven elements: ${card.motion.scrollDriven}`);
+    }
+    lines.push(`- Reduced-motion support: ${card.motion.reducedMotion ? 'yes' : 'not detected'}`);
+    lines.push('');
+  }
+
+  if (card.layouts.length > 0) {
+    lines.push('## Page layouts');
+    lines.push('');
+    for (const layout of card.layouts) {
+      const shape = `${layout.columns || 1} col × ${layout.rows || 1} row`;
+      const ratio = layout.ratio && layout.ratio !== 1 ? `, ratio ${layout.ratio}` : '';
+      lines.push(
+        `- **${layout.type}** — ${shape}, ${layout.childCount} children${ratio} (\`${layout.selector}\`)`,
+      );
+    }
+    lines.push('');
+  }
+
   lines.push('## Translation notes for slides');
   lines.push('');
   lines.push(`- Keep the canvas \`${palette.canvas}\` and ink \`${palette.foreground}\` relationship.`);
@@ -1117,6 +1708,9 @@ function buildBrief(card) {
     `- The reference is ${mode.density}; adapt density for projection rather than copying it literally.`,
   );
   lines.push('- Normalize contrast and minimum type sizes for a projector; the reference may not be legible at distance.');
+  lines.push('- Use 2–3 motifs, not every motif. The rest are evidence, not instructions.');
+  lines.push('- Translate scroll and hover choreography into slide entrances and reveals; do not copy website motion literally.');
+  lines.push('- Map the layout archetypes to the shared cover, content, split, comparison, quote, and grid compositions.');
   lines.push('');
 
   lines.push('## Caveats');
@@ -1129,7 +1723,6 @@ function buildBrief(card) {
 
 function buildThemeCss(card) {
   const { palette, typography, surfaces, mode } = card;
-  const isDark = mode.theme === 'dark';
   const base = Math.max(16, Number.parseFloat(typography.sizes?.body) || 16);
   const h1 = Number.parseFloat(typography.sizes?.h1) || base * 2.5;
   const h2 = Number.parseFloat(typography.sizes?.h2) || base * 1.4;
@@ -1181,23 +1774,6 @@ function buildThemeCss(card) {
     codeBg: palette.codeBg,
     codeFg: palette.codeFg,
   };
-
-  let dark = null;
-  if (!isDark) {
-    const darkCanvas = darker(palette.canvas, 0.82);
-    const darkForeground = ensureContrast(lighter(palette.foreground, 0.82), darkCanvas, 7);
-    dark = {
-      canvas: darkCanvas,
-      foreground: darkForeground,
-      muted: ensureContrast(mix(darkForeground, darkCanvas, 0.5), darkCanvas, 4.5),
-      border: mix(darkCanvas, darkForeground, 0.2),
-      accent: ensureContrast(lighter(palette.accent, 0.25), darkCanvas, 4.5),
-      card: mix(darkCanvas, darkForeground, 0.06),
-      cardBorder: mix(darkCanvas, darkForeground, 0.18),
-      codeBg: mix(darkCanvas, darkForeground, 0.08),
-      codeFg: darkForeground,
-    };
-  }
 
   function rootBlock(colors, indent = '') {
     const prop = (key, value) => `${indent}  ${key}: ${value};`;
@@ -1278,13 +1854,6 @@ function buildThemeCss(card) {
   lines.push('');
   lines.push(rootBlock(light));
 
-  if (dark) {
-    lines.push('');
-    lines.push('@media (prefers-color-scheme: dark) {');
-    lines.push(rootBlock(dark, '  '));
-    lines.push('}');
-  }
-
   return lines.join('\n') + '\n';
 }
 
@@ -1324,6 +1893,391 @@ theme: ./theme
 Read \`../style-brief.md\` for the full style card and caveats.
 `;
 }
+
+function buildSampleCss(card) {
+  const types = new Set(card.motifTypes ?? []);
+  const accent = card.palette?.accent ?? '#d3a4ff';
+  const lines = ['', '/* Sample-only motif + motion styles. Not part of the reusable theme. */'];
+
+  if (
+    types.has('gradient') ||
+    types.has('pseudo-gradient') ||
+    types.has('glow') ||
+    types.has('pseudo-shadow')
+  ) {
+    lines.push(
+      '.dc-motif { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }',
+      '.dc-motif::before { content: ""; position: absolute; width: 560px; height: 560px; right: -140px; top: -180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ' +
+        accent +
+        ' 20%, transparent), transparent 70%); filter: blur(32px); }',
+      '.dc-motif::after { content: ""; position: absolute; width: 340px; height: 340px; left: -120px; bottom: -160px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ' +
+        accent +
+        ' 10%, transparent), transparent 72%); filter: blur(36px); }',
+    );
+  }
+
+  if (types.has('pattern') || types.has('image-texture') || types.has('pseudo-image')) {
+    lines.push(
+      '.dc-motif { background-image: radial-gradient(color-mix(in srgb, ' +
+        accent +
+        ' 22%, transparent) 1px, transparent 1px); background-size: 24px 24px; opacity: 0.22; }',
+    );
+  }
+
+  if (types.has('hairline-rule') || types.has('dashed-rule')) {
+    lines.push(
+      '.dc-rule { width: 56px; height: 2px; background: var(--c-accent); margin: 1.25rem 0; }',
+    );
+  }
+
+  const animation = (card.motion?.animations ?? []).find(
+    (item) =>
+      typeof item.duration === 'number' &&
+      item.duration > 0 &&
+      item.duration <= 1600 &&
+      !String(item.type).includes('loop'),
+  );
+  const duration = animation?.duration ?? 600;
+  const easing =
+    animation?.easing && animation.easing !== 'linear'
+      ? animation.easing
+      : 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+  lines.push(
+    ':root { --dc-motion-duration: ' + duration + 'ms; --dc-motion-ease: ' + easing + '; }',
+    '@keyframes dc-reveal { from { opacity: 0; transform: translateY(16px); filter: blur(5px); } to { opacity: 1; transform: none; filter: blur(0); } }',
+    '.dc-reveal { animation: dc-reveal var(--dc-motion-duration) var(--dc-motion-ease) both; }',
+    '.dc-delay-1 { animation-delay: 90ms; }',
+    '.dc-delay-2 { animation-delay: 180ms; }',
+    '.dc-delay-3 { animation-delay: 270ms; }',
+    '@media (prefers-reduced-motion: reduce) { .dc-reveal { animation: none; } }',
+  );
+
+  return lines.join('\n') + '\n';
+}
+
+const MOTIF_LABELS = {
+  gradient: 'layered gradients',
+  'pseudo-gradient': 'layered gradients',
+  glow: 'soft radial glow',
+  'pseudo-shadow': 'soft shadow',
+  pattern: 'repeating texture',
+  'image-texture': 'image texture',
+  'pseudo-image': 'decorative image layer',
+  'pseudo-shape': 'pseudo-element shapes',
+  'pseudo-rule': 'pseudo-element rules',
+  'inline-svg': 'illustrated accents',
+  'svg-gradient': 'illustrated accents',
+  'hairline-rule': 'hairline rules',
+  'dashed-rule': 'dashed rules',
+  'rounded-corner': 'rounded surfaces',
+  pill: 'pill-shaped controls',
+  blur: 'soft blur',
+  glass: 'translucent layers',
+  'clip-shape': 'clipped geometry',
+  mask: 'masked geometry',
+  blend: 'blend modes',
+  'fixed-overlay': 'fixed atmosphere layer',
+  'sticky-element': 'sticky layers',
+  'horizontal-scroll': 'horizontal storytelling',
+  'text-glow': 'text glow',
+  'vertical-type': 'vertical type',
+  rotated: 'rotated elements',
+};
+
+const MOTIF_PRIORITY = [
+  'gradient',
+  'pseudo-gradient',
+  'glow',
+  'pattern',
+  'image-texture',
+  'pseudo-image',
+  'inline-svg',
+  'svg-gradient',
+  'clip-shape',
+  'hairline-rule',
+  'dashed-rule',
+  'blur',
+  'rounded-corner',
+  'glass',
+  'pill',
+];
+
+function sampleMotifs(card) {
+  if (!card.motifs.length) {
+    return [{ type: card.mode.surface, count: 1, label: card.mode.surface }];
+  }
+
+  const grouped = new Map();
+  for (const motif of card.motifs) {
+    const label = MOTIF_LABELS[motif.type] || String(motif.type).replace(/-/g, ' ');
+    const existing = grouped.get(label);
+    if (existing) {
+      existing.count += motif.count;
+    } else {
+      grouped.set(label, { ...motif, label, count: motif.count });
+    }
+  }
+
+  const motifs = Array.from(grouped.values());
+  const preferred = motifs
+    .filter((motif) => MOTIF_PRIORITY.includes(motif.type))
+    .sort((a, b) => {
+      const aIndex = MOTIF_PRIORITY.indexOf(a.type);
+      const bIndex = MOTIF_PRIORITY.indexOf(b.type);
+      if (aIndex !== bIndex) return aIndex - bIndex;
+      return b.count - a.count;
+    });
+  const rest = motifs.filter((motif) => !MOTIF_PRIORITY.includes(motif.type));
+  return [...preferred, ...rest].slice(0, 3);
+}
+
+function sampleSlides(card) {
+  const host = new URL(card.source.url).hostname;
+  const motifs = sampleMotifs(card);
+  const motifCards = motifs
+    .map(
+      (motif, index) => `<div class="card dc-reveal dc-delay-${index + 1}">
+  <div class="card-tag">motif 0${index + 1}</div>
+  <div class="card-title">${motif.label}</div>
+  <div class="card-desc">${motif.count === 1 ? 'Pulled from the reference.' : `Seen ${motif.count}× in the reference.`}</div>
+</div>`,
+    )
+    .join('\n');
+
+  return `---
+theme: ./theme
+highlighter: shiki
+lineNumbers: true
+title: Deckcraft style sample
+layout: cover
+colorSchema: ${card.mode.theme}
+---
+
+<div class="dc-motif" aria-hidden="true"></div>
+
+<h1 class="dc-reveal">The shape of a good idea</h1>
+
+<p class="dc-reveal dc-delay-1">A sample deck rendered with the extracted style from ${host}</p>
+
+<p class="author dc-reveal dc-delay-2">Deckcraft · style import</p>
+
+<!--
+This deck exists to test the generated theme.
+Replace it with your own content.
+-->
+
+---
+layout: content
+---
+
+# One claim per slide
+
+The best slides don't explain a topic. They make an argument.
+
+- **Start with tension** — what breaks if the audience doesn't know this?
+- **Show evidence** — code, data, a diagram, or a concrete example
+- **Land the point** — one sentence they can repeat tomorrow
+
+<!--
+Content layout: check heading scale, body measure, and list rhythm.
+-->
+
+---
+layout: content
+---
+
+# The smallest useful loop
+
+<div class="split">
+<div>
+
+Write the claim first. Then choose the evidence that earns it.
+
+~~~ts
+type Slide = {
+  claim: string
+  evidence: Evidence[]
+}
+
+function render(slide: Slide) {
+  return compose(
+    slide.claim,
+    slide.evidence,
+  )
+}
+~~~
+
+</div>
+<div>
+
+<div class="card">
+  <strong>Design check</strong>
+  <p>Code should sit next to the idea, not below it. If the code is the point, give it the whole slide.</p>
+</div>
+
+</div>
+</div>
+
+<!--
+Split layout: code on one side, context on the other.
+-->
+
+---
+layout: content
+---
+
+# The reference's visual grammar
+
+<div class="grid-3">
+${motifCards}
+</div>
+
+<!--
+This slide pulls the top motifs from the style card.
+If the reference is grid- or bento-heavy, this is the composition to study.
+-->
+
+---
+layout: comparison
+---
+
+# Before and after
+
+<div class="compare">
+<div class="compare-col">
+  <p class="compare-label">Before</p>
+  <h2>Slides as documents</h2>
+  <ul>
+    <li>Every detail on one slide</li>
+    <li>Text sized for a laptop</li>
+    <li>Layout chosen after the fact</li>
+  </ul>
+</div>
+<div class="compare-col">
+  <p class="compare-label accent">After</p>
+  <h2>Slides as sequence</h2>
+  <ul>
+    <li>One idea per slide</li>
+    <li>Type sized for the back row</li>
+    <li>Layout driven by the evidence</li>
+  </ul>
+</div>
+<div class="compare-divider">→</div>
+</div>
+
+<!--
+Comparison layout: check two-column balance and the divider.
+-->
+
+---
+layout: quote
+---
+
+<div class="quote-mark">“</div>
+
+<blockquote>
+The audience doesn't remember the slide. They remember the sentence they could repeat afterward.
+</blockquote>
+
+<div class="attribution">
+  <div class="attribution-line"></div>
+  <div class="attribution-name">A useful constraint</div>
+  <div class="attribution-role">Deckcraft sample</div>
+</div>
+
+<!--
+Quote layout: check display type, measure, and attribution.
+-->
+
+---
+layout: impact
+---
+
+# 1
+
+Idea per slide
+
+<span class="text-sm">The only rule that survives every theme</span>
+
+<!--
+Impact layout: check display size and the accent rule.
+-->
+
+---
+layout: content
+---
+
+# Now make it yours
+
+Paste a URL into Deckcraft, pick the direction that feels right, and replace this sample with your story.
+
+~~~bash
+npm run style -- https://example.com --out ./style --preview
+~~~
+
+<!--
+End with an action. The sample deck is disposable; the theme is the artifact.
+Source: ${card.source.url}
+-->
+`;
+}
+
+function sampleReadme(card) {
+  return `# Sample deck
+
+Generated from ${card.source.url} by \`deckcraft-style --preview\`.
+
+This sample deck exercises the cover, content, split, comparison, quote, and impact layouts using the extracted theme, plus the top motifs and the detected motion language.
+
+## Run it
+
+\`\`\`bash
+npx @slidev/cli slides.md
+\`\`\`
+
+Then open the local Slidev URL and flip through the slides.
+
+## What to look for
+
+- Does the canvas/ink relationship match the reference?
+- Does the accent feel like the reference, or does it dominate?
+- Does the type scale hold up at 1920×1080?
+- Do the motifs feel like the reference, or like decoration added afterward?
+- Does the motion feel similar without becoming distracting?
+- Do the shared layouts fight the reference's composition?
+- Are the fonts actually available, or is the deck falling back?
+
+The generated theme is intentionally separate from Deckcraft's bundled themes. Edit \`theme/styles.css\` to tune it.
+`;
+}
+
+async function writeSampleDeck(card, outDir, themeCss) {
+  const skillDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const sharedDir = path.join(skillDir, 'themes', 'shared');
+  const sampleDir = path.join(outDir, 'sample');
+  const themeDir = path.join(sampleDir, 'theme');
+
+  if (!fssync.existsSync(path.join(sharedDir, 'base.css'))) {
+    throw new Error(`Could not find shared theme files at ${sharedDir}`);
+  }
+
+  await fs.mkdir(themeDir, { recursive: true });
+  await fs.copyFile(path.join(sharedDir, 'base.css'), path.join(themeDir, 'base.css'));
+  await fs.copyFile(
+    path.join(sharedDir, 'global-bottom.vue'),
+    path.join(themeDir, 'global-bottom.vue'),
+  );
+  await fs.cp(path.join(sharedDir, 'layouts'), path.join(themeDir, 'layouts'), {
+    recursive: true,
+  });
+  await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss + buildSampleCss(card));
+  await fs.writeFile(path.join(sampleDir, 'slides.md'), sampleSlides(card));
+  await fs.writeFile(path.join(sampleDir, 'README.md'), sampleReadme(card));
+
+  return sampleDir;
+}
+
 
 // ─── Main ─────────────────────────────────────────────────────────────────
 
@@ -1388,6 +2342,37 @@ async function main() {
     // Let client-rendered pages settle.
     if (waitMs > 0) await sleep(waitMs);
 
+    let screenshotFiles = [];
+    if (values.screenshots) {
+      const referenceDir = path.join(outDir, 'reference');
+      await fs.mkdir(referenceDir, { recursive: true });
+
+      const viewportShot = await send('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: false,
+      });
+      const viewportPath = path.join(referenceDir, 'viewport.png');
+      await fs.writeFile(viewportPath, Buffer.from(viewportShot.data, 'base64'));
+      screenshotFiles.push(viewportPath);
+
+      try {
+        const metrics = await send('Page.getLayoutMetrics');
+        const content = metrics.cssContentSize ?? metrics.contentSize;
+        const width = Math.max(viewportWidth, Math.min(Math.ceil(content.width), 1920));
+        const height = Math.max(viewportHeight, Math.min(Math.ceil(content.height), 12000));
+        const fullShot = await send('Page.captureScreenshot', {
+          format: 'png',
+          captureBeyondViewport: true,
+          clip: { x: 0, y: 0, width, height, scale: 1 },
+        });
+        const fullPath = path.join(referenceDir, 'full-page.png');
+        await fs.writeFile(fullPath, Buffer.from(fullShot.data, 'base64'));
+        screenshotFiles.push(fullPath);
+      } catch (error) {
+        console.warn(`Warning: could not capture full-page screenshot: ${error.message}`);
+      }
+    }
+
     const result = await send('Runtime.evaluate', {
       expression: `(${extractPage.toString()})()`,
       returnByValue: true,
@@ -1407,6 +2392,9 @@ async function main() {
     }
 
     const card = buildStyleCard(data);
+    if (screenshotFiles.length > 0) {
+      card.screenshots = screenshotFiles.map((file) => path.relative(outDir, file));
+    }
     const brief = buildBrief(card);
     const themeCss = buildThemeCss(card);
     const themeReadme = buildThemeReadme(card);
@@ -1417,6 +2405,11 @@ async function main() {
     await fs.writeFile(path.join(outDir, 'style-brief.md'), brief);
     await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss);
     await fs.writeFile(path.join(themeDir, 'README.md'), themeReadme);
+
+    let sampleDir = null;
+    if (values.preview) {
+      sampleDir = await writeSampleDeck(card, outDir, themeCss);
+    }
 
     console.log('');
     console.log(`Theme: ${card.mode.theme} · ${card.mode.density} · ${card.mode.surface}`);
@@ -1429,6 +2422,14 @@ async function main() {
     console.log(`  ${path.relative(process.cwd(), path.join(outDir, 'style-brief.md'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'styles.css'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'README.md'))}`);
+    for (const screenshot of screenshotFiles) {
+      console.log(`  ${path.relative(process.cwd(), screenshot)}`);
+    }
+    if (sampleDir) {
+      console.log(`  ${path.relative(process.cwd(), path.join(sampleDir, 'slides.md'))}`);
+      console.log('');
+      console.log(`Preview: npx @slidev/cli ${path.relative(process.cwd(), path.join(sampleDir, 'slides.md'))}`);
+    }
     console.log('');
 
     ws.close();

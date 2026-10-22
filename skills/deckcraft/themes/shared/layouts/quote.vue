@@ -42,6 +42,11 @@
   position: relative;
   border: none;
   padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+.quote-layout blockquote::before {
+  display: none;
 }
 .quote-layout .attribution {
   display: flex;

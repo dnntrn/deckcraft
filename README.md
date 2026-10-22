@@ -52,24 +52,31 @@ Token maps pre-extracted for:
 Paste a reference site and extract its visual language into a Deckcraft theme:
 
 ```bash
-npm run style -- https://stripe.com --out ./style
+npm run style -- https://stripe.com --out ./style --preview --screenshots
 ```
 
 Output:
 
 ```text
 style/
-├── style.json        # computed tokens + DOM geometry
+├── style.json        # tokens, motifs, motion, layouts, DOM geometry
 ├── style-brief.md    # human-readable style card
-└── theme/
-    ├── styles.css    # generated Deckcraft theme tokens
-    └── README.md
+├── theme/
+│   ├── styles.css    # generated Deckcraft theme tokens
+│   └── README.md
+├── reference/        # with --screenshots
+│   ├── viewport.png
+│   └── full-page.png
+└── sample/           # with --preview
+    └── slides.md
 ```
 
-This v0 reads the rendered CSSOM and DOM geometry — no screenshots. It captures
-palette, typography, surfaces, density, and signature moves, then normalizes them
-for projection. Use `--light` or `--dark` to force a color scheme. Requires Node 22+
-and Chrome/Chromium (`CHROME_PATH` supported).
+This v0.6 reads the rendered CSSOM and DOM geometry. It captures palette,
+typography, surfaces, density, **motifs, motion, and page-layout archetypes**,
+then normalizes them for projection. Add `--screenshots` for reference images and
+`--preview` for a sample Slidev deck. The generated theme preserves the captured
+color mode; use `--light` or `--dark` to choose. Requires Node 22+ and
+Chrome/Chromium (`CHROME_PATH` supported).
 
 Style import is opt-in. Deckcraft's normal generation flow still uses bundled
 themes and never fetches a website unless you explicitly run this tool.
