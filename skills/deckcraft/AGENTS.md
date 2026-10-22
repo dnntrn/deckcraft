@@ -39,13 +39,14 @@ If the user provides a reference URL — *"make it feel like this site"* — fol
 `references/style-import.md`. Run the opt-in extractor with a local Chrome:
 
 ```bash
-node .claude/skills/deckcraft/tools/style-import.mjs https://example.com --out ./style
+node .claude/skills/deckcraft/tools/style-import.mjs https://example.com --out ./style --deck ./deck
 ```
 
-From the Deckcraft source repo, use `npm run style -- https://example.com --out ./style`.
+From the Deckcraft source repo, use `npm run style -- https://example.com --out ./style --deck ./deck`.
 
-Then use `style/style-brief.md` as the design intent and copy the generated
-`style/theme/styles.css` into `deck/theme/`. Do not clone logos or proprietary assets.
+`--deck` installs the theme and writes `deck/STYLE.md`, which contains the palette,
+layout recipes, motifs, motion guidance, and generation rules. Read `deck/STYLE.md`
+before generating or editing slides. Do not clone logos or proprietary assets.
 
 ## The Signature
 

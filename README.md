@@ -55,6 +55,8 @@ Paste a reference site and extract its visual language into a Deckcraft theme:
 npm run style -- https://stripe.com --out ./style --preview --screenshots
 # or generate all three directions:
 npm run style -- https://stripe.com --out ./style --directions --screenshots
+# or apply the style directly to an existing deck:
+npm run style -- https://stripe.com --out ./style --deck ./deck
 ```
 
 Output:
@@ -76,13 +78,15 @@ style/
     └── inspired.md
 ```
 
-This v0.7 reads the rendered CSSOM and DOM geometry. It captures palette,
+This v0.8 reads the rendered CSSOM and DOM geometry. It captures palette,
 typography, surfaces, density, **motifs, motion, and page-layout archetypes**,
 then normalizes them for projection. Add `--screenshots` for reference images and
 `--preview` for a sample Slidev deck. Add `--directions` for three variants:
 faithful, translated, and inspired. The style card also includes layout recipes
 that map detected page archetypes to concrete slide compositions. The generated
 theme preserves the captured color mode; use `--light` or `--dark` to choose.
+Use `--deck ./deck` to install the generated theme and write `deck/STYLE.md` with
+layout recipes, motifs, motion guidance, and generation rules.
 Requires Node 22+ and Chrome/Chromium (`CHROME_PATH` supported).
 
 Style import is opt-in. Deckcraft's normal generation flow still uses bundled
@@ -187,6 +191,7 @@ All output follows this structure at your project root:
 ```
 deck/
 ├── PRESENTATION.md     # Context: audience, tone, design system
+├── STYLE.md            # Imported style guide (optional, from --deck)
 ├── slides.md           # The deck in Slidev markdown
 ├── theme/              # Generated custom theme
 ├── assets/             # Images, diagrams

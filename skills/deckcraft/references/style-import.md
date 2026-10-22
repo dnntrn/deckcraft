@@ -75,6 +75,7 @@ Options:
 --preview           Generate sample/slides.md and a ready-to-run Slidev theme
 --screenshots       Save viewport and full-page reference screenshots
 --directions        Generate faithful, translated, and inspired sample decks
+--deck <dir>        Install the theme and write STYLE.md into a deck directory
 ```
 
 Requires Node 22+ and Chrome/Chromium. Set `CHROME_PATH` if the browser is not in a
@@ -83,6 +84,24 @@ standard location.
 ---
 
 ## Use the result
+
+### Apply directly to a deck
+
+```bash
+npm run style -- https://example.com --out ./style --deck ./deck
+```
+
+This installs the generated theme at `deck/theme/` and writes `deck/STYLE.md` with:
+
+- palette and typography
+- layout recipes
+- motif guidance
+- motion guidance
+- generation rules and slide defaults
+
+Read `deck/STYLE.md` before generating or editing slides.
+
+### Manual use
 
 1. Read `style-brief.md` first. It is the design intent.
 2. Copy `style/theme/styles.css` into the deck’s `theme/` directory.
@@ -157,10 +176,10 @@ family. A website's layout is evidence, not a template.
 
 Use this to compare translation choices before committing to one.
 
-## What v0.8 should add
+## What v0.9 should add
 
-- Vision-assisted brief from the optional screenshots
 - Multi-page sampling (home, product, docs, blog)
-- A screenshot critic that compares the generated deck to the reference
 - Font substitution suggestions with open alternatives
-- Motion previews in the sample deck
+- Style blending: faithful / translated / inspired as reusable style cards
+- Editable PPTX export
+- A visual select-and-prompt editor over the deck spec

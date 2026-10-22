@@ -21,7 +21,7 @@ import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── CLI ──────────────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ const { values, positionals } = parseArgs({
     preview: { type: 'boolean', default: false },
     screenshots: { type: 'boolean', default: false },
     directions: { type: 'boolean', default: false },
+    deck: { type: 'string' },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -58,6 +59,7 @@ Options:
   --preview           Generate a sample deck in <out>/sample
   --screenshots       Save reference screenshots in <out>/reference
   --directions        Generate faithful, translated, and inspired sample decks
+  --deck <dir>        Apply the generated theme and STYLE.md to a deck directory
   -h, --help          Show this help
 
 Requires Chrome/Chromium. Set CHROME_PATH if it is not in a standard location.
@@ -2530,6 +2532,141 @@ async function writeSampleDeck(card, outDir, themeCss, directions = false) {
 }
 
 
+function buildDeckStyleGuide(card) {
+  const lines = [];
+  const { palette, typography, mode } = card;
+
+  lines.push(`# Deck style — ${card.source.title || new URL(card.source.url).hostname}`);
+  lines.push('');
+  lines.push(`Source: ${card.source.url}`);
+  lines.push(`Captured: ${card.source.capturedAt} at ${card.source.viewport.width}×${card.source.viewport.height}`);
+  lines.push(`Mode: ${mode.theme} · ${mode.density} · ${mode.surface}`);
+  lines.push('');
+  lines.push('Read this file before generating or editing slides in this deck.');
+  lines.push('The theme is already installed at `theme/styles.css`. Use `theme: ./theme` in `slides.md`.');
+  lines.push('');
+
+  lines.push('## Palette');
+  lines.push('');
+  lines.push(`- Canvas: \`${palette.canvas}\``);
+  lines.push(`- Foreground: \`${palette.foreground}\``);
+  lines.push(`- Muted: \`${palette.muted}\``);
+  lines.push(`- Border: \`${palette.border}\``);
+  lines.push(`- Accent: \`${palette.accent}\``);
+  lines.push(`- Card: \`${palette.card}\``);
+  lines.push('');
+  lines.push('Use the accent sparingly. It is the only accent color in the deck.');
+  lines.push('');
+
+  lines.push('## Typography');
+  lines.push('');
+  lines.push(`- Display: ${typography.displayFamily}`);
+  lines.push(`- Body: ${typography.bodyFamily}`);
+  lines.push(`- Mono: ${typography.monoFamily}`);
+  lines.push(`- Heading treatment: weight ${typography.headingWeight}, style ${typography.headingStyle}, tracking ${typography.headingTracking}`);
+  lines.push('');
+
+  lines.push('## Layout recipes');
+  lines.push('');
+  if (card.layoutRecipes.length === 0) {
+    lines.push('No strong page archetypes were detected. Use the bundled Deckcraft compositions.');
+  } else {
+    lines.push('Prefer these compositions when they fit the content:');
+    lines.push('');
+    for (const recipe of card.layoutRecipes) {
+      const extras = [
+        recipe.ratio ? `ratio ${recipe.ratio}` : null,
+        recipe.columns ? `${recipe.columns} columns` : null,
+      ]
+        .filter(Boolean)
+        .join(', ');
+      lines.push(`- **${recipe.type}** → \`${recipe.slideLayout}\`${extras ? ` (${extras})` : ''} — ${recipe.notes}`);
+    }
+  }
+  lines.push('');
+
+  lines.push('## Motifs');
+  lines.push('');
+  if (card.motifs.length === 0) {
+    lines.push('No strong motifs were detected. Keep decoration minimal.');
+  } else {
+    lines.push('The reference uses these visual devices. Use 2–3 of them, not all of them:');
+    lines.push('');
+    for (const motif of sampleMotifs(card)) {
+      lines.push(`- **${motif.label}** ×${motif.count}`);
+    }
+  }
+  lines.push('');
+
+  lines.push('## Motion');
+  lines.push('');
+  if (card.motion.summary.length === 0) {
+    lines.push('No strong motion language was detected. Keep transitions minimal.');
+  } else {
+    lines.push('Translate this into slide entrances and reveals, not website choreography:');
+    lines.push('');
+    for (const label of card.motion.summary) lines.push(`- ${label}`);
+    for (const animation of card.motion.animations.slice(0, 4)) {
+      lines.push(`- ${animation.type}: ${animation.duration}ms, ${animation.easing}`);
+    }
+    if (card.motion.libraries.length > 0) {
+      lines.push(`- JS libraries detected: ${card.motion.libraries.join(', ')}`);
+    }
+  }
+  lines.push('');
+
+  lines.push('## Generation rules');
+  lines.push('');
+  lines.push('- Use one idea per slide. The title should be a claim, not a topic.');
+  lines.push('- Prefer evidence layouts: code, diagrams, comparisons, numbers, and annotated screenshots.');
+  lines.push('- Keep body copy at a projector-safe size. Do not copy the reference’s smallest text.');
+  lines.push('- Use the layout recipes above when the content matches them.');
+  lines.push('- Keep the canvas/ink relationship and the accent system consistent across the deck.');
+  lines.push('- Do not copy logos, trademarks, proprietary illustrations, or site copy.');
+  lines.push('- Do not reproduce scroll choreography or hover effects; use reveal and entrance motion only.');
+  lines.push('');
+
+  lines.push('## Slide defaults');
+  lines.push('');
+  lines.push('- **Cover** — use `cover`; the display face carries the title.');
+  lines.push('- **Content** — use `content`; keep the measure narrow and the hierarchy obvious.');
+  lines.push('- **Code / evidence** — use `content` + `.split` or `big-code` when the code is the point.');
+  lines.push('- **Comparison** — use `comparison` for before/after or us/them.');
+  lines.push('- **Section break** — use `divider`; reset attention without adding a new motif.');
+  lines.push('- **Close** — end with an action, a link, or a single sentence worth repeating.');
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+async function applyStyleToDeck(card, themeCss, deckDir) {
+  const skillDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const sharedDir = path.join(skillDir, 'themes', 'shared');
+  const themeDir = path.join(deckDir, 'theme');
+
+  if (!fssync.existsSync(path.join(sharedDir, 'base.css'))) {
+    throw new Error(`Could not find shared theme files at ${sharedDir}`);
+  }
+
+  await fs.mkdir(themeDir, { recursive: true });
+  await fs.copyFile(path.join(sharedDir, 'base.css'), path.join(themeDir, 'base.css'));
+  await fs.copyFile(
+    path.join(sharedDir, 'global-bottom.vue'),
+    path.join(themeDir, 'global-bottom.vue'),
+  );
+  await fs.cp(path.join(sharedDir, 'layouts'), path.join(themeDir, 'layouts'), {
+    recursive: true,
+  });
+  await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss);
+  await fs.writeFile(path.join(deckDir, 'STYLE.md'), buildDeckStyleGuide(card));
+
+  return {
+    themeDir,
+    styleGuide: path.join(deckDir, 'STYLE.md'),
+  };
+}
+
+
 // ─── Main ─────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -2662,6 +2799,11 @@ async function main() {
       sampleDir = await writeSampleDeck(card, outDir, themeCss, values.directions);
     }
 
+    let applied = null;
+    if (values.deck) {
+      applied = await applyStyleToDeck(card, themeCss, path.resolve(values.deck));
+    }
+
     console.log('');
     console.log(`Theme: ${card.mode.theme} · ${card.mode.density} · ${card.mode.surface}`);
     console.log(`Canvas ${card.palette.canvas} · Ink ${card.palette.foreground} · Accent ${card.palette.accent}`);
@@ -2685,6 +2827,12 @@ async function main() {
       }
       console.log('');
       console.log(`Preview: npx @slidev/cli ${path.relative(process.cwd(), path.join(sampleDir, 'slides.md'))}`);
+    }
+    if (applied) {
+      console.log(`  ${path.relative(process.cwd(), applied.themeDir)}/styles.css`);
+      console.log(`  ${path.relative(process.cwd(), applied.styleGuide)}`);
+      console.log('');
+      console.log('Applied to deck. Read STYLE.md before generating or editing slides.');
     }
     console.log('');
 

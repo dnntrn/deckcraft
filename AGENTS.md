@@ -5,6 +5,7 @@ This repo uses the `deck/` convention for AI-generated presentation decks:
 ```
 deck/
 ├── PRESENTATION.md     # Context: audience, tone, design system, anti-references
+├── STYLE.md            # Imported style guide (optional, from tools/style-import.mjs)
 ├── slides.md           # The deck in Slidev markdown (sli.dev)
 ├── theme/              # Composed theme (shared foundation + chosen theme tokens)
 │   ├── styles.css      # @import base.css + theme tokens + dark mode overrides
@@ -79,6 +80,7 @@ Just ask. "Make me slides for my React lifecycle talk." The AI will:
 2. Extract design tokens from pre-built maps
 3. Propose outline → confirm
 4. Compose theme directory: copy `shared/` (base.css, layouts/, global-bottom.vue) + chosen theme's `styles.css` into `deck/theme/`. Rewrite `@import '../shared/base.css'` → `@import './base.css'`.
+   If `deck/STYLE.md` exists, keep the installed `deck/theme/` and follow the imported style instead of choosing a bundled theme.
 5. Generate slides with custom layouts + HTML/CSS diagrams
 
 ### Iterating

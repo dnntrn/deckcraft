@@ -122,7 +122,7 @@ Once the outline is approved, the craft begins.
 
 3. **Read `references/design-system-tokens.md`** — Use pre-extracted tokens by default. If the user explicitly asks to match a URL, use the opt-in style import flow in `references/style-import.md` instead of scraping inside the generation loop.
 
-4. **Compose theme directory** — Copy shared foundation + chosen theme:
+4. **Compose theme directory** — If `deck/STYLE.md` exists, the deck already has an imported style. Read it, keep the installed `deck/theme/`, and follow its layout recipes, motifs, and motion guidance. Do not overwrite it with a bundled theme. Otherwise copy shared foundation + chosen theme:
    - `themes/shared/base.css` → `deck/theme/base.css`
    - `themes/shared/layouts/*.vue` → `deck/theme/layouts/*.vue` (all 11 layouts)
    - `themes/shared/global-bottom.vue` → `deck/theme/global-bottom.vue`
