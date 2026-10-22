@@ -37,6 +37,7 @@ const { values, positionals } = parseArgs({
     wait: { type: 'string', default: '800' },
     preview: { type: 'boolean', default: false },
     screenshots: { type: 'boolean', default: false },
+    directions: { type: 'boolean', default: false },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -56,6 +57,7 @@ Options:
   --wait <ms>         Extra wait after load for client-rendered pages (default: 800)
   --preview           Generate a sample deck in <out>/sample
   --screenshots       Save reference screenshots in <out>/reference
+  --directions        Generate faithful, translated, and inspired sample decks
   -h, --help          Show this help
 
 Requires Chrome/Chromium. Set CHROME_PATH if it is not in a standard location.
@@ -1436,6 +1438,119 @@ function summarizeMotion(data) {
   };
 }
 
+function buildLayoutRecipes(layouts) {
+  const priority = {
+    'asymmetric-split': 1,
+    split: 2,
+    bento: 3,
+    grid: 4,
+    steps: 5,
+    centered: 6,
+    'narrow-measure': 7,
+    hero: 8,
+    'horizontal-scroll': 9,
+    sticky: 10,
+  };
+
+  const byType = new Map();
+  for (const layout of layouts ?? []) {
+    if (!priority[layout.type]) continue;
+    if (
+      (layout.type === 'split' || layout.type === 'asymmetric-split') &&
+      (layout.childCount ?? 0) > 3
+    ) {
+      continue;
+    }
+    if ((layout.rect?.height ?? 0) < 220) continue;
+    const area = (layout.rect?.width ?? 0) * (layout.rect?.height ?? 0);
+    const current = byType.get(layout.type);
+    if (!current || area > current.area) byType.set(layout.type, { ...layout, area });
+  }
+
+  return Array.from(byType.values())
+    .sort((a, b) => priority[a.type] - priority[b.type])
+    .slice(0, 6)
+    .map((layout) => {
+      if (layout.type === 'asymmetric-split') {
+        return {
+          type: layout.type,
+          slideLayout: 'two-cols',
+          composition: 'two-cols',
+          ratio: layout.ratio >= 2 ? '35/65' : '45/55',
+          source: layout.selector,
+          notes: 'Preserve the unequal column weight; text and visual do not get equal space.',
+        };
+      }
+      if (layout.type === 'split') {
+        return {
+          type: layout.type,
+          slideLayout: 'two-cols',
+          composition: 'two-cols',
+          ratio: '50/50',
+          source: layout.selector,
+          notes: 'Two-column composition with a clear text and evidence side.',
+        };
+      }
+      if (layout.type === 'bento' || layout.type === 'grid') {
+        return {
+          type: layout.type,
+          slideLayout: 'feature-grid',
+          composition: layout.type,
+          columns: Math.min(Math.max(layout.columns || 3, 2), 4),
+          source: layout.selector,
+          notes:
+            layout.type === 'bento'
+              ? 'Mixed-size grid; avoid equal cards when one item carries more weight.'
+              : 'Modular grid; keep the card count low and the hierarchy obvious.',
+        };
+      }
+      if (layout.type === 'steps') {
+        return {
+          type: layout.type,
+          slideLayout: 'timeline',
+          composition: 'timeline',
+          source: layout.selector,
+          notes: 'Horizontal sequence; keep each step to a short title and one line.',
+        };
+      }
+      if (layout.type === 'centered') {
+        return {
+          type: layout.type,
+          slideLayout: 'quote',
+          composition: 'centered',
+          source: layout.selector,
+          notes: 'Centered statement; let one idea own the slide.',
+        };
+      }
+      if (layout.type === 'narrow-measure') {
+        return {
+          type: layout.type,
+          slideLayout: 'content',
+          composition: 'narrow-measure',
+          maxWidth: '58ch',
+          source: layout.selector,
+          notes: 'Keep the measure narrow; do not stretch body copy across the canvas.',
+        };
+      }
+      if (layout.type === 'hero') {
+        return {
+          type: layout.type,
+          slideLayout: 'cover',
+          composition: 'hero',
+          source: layout.selector,
+          notes: 'Open with the reference’s hero proportion and type scale.',
+        };
+      }
+      return {
+        type: layout.type,
+        slideLayout: 'timeline',
+        composition: layout.type,
+        source: layout.selector,
+        notes: 'Translate the horizontal sequence into a slide timeline.',
+      };
+    });
+}
+
 function buildStyleCard(data) {
   const isDark = luminance(pickCanvas(data, false)) < 0.25;
   const canvas = pickCanvas(data, isDark);
@@ -1577,6 +1692,7 @@ function buildStyleCard(data) {
       gap: layout.gap,
     })),
     layoutTypes: Array.from(layoutTypes),
+    layoutRecipes: buildLayoutRecipes(layouts),
     signatureMoves,
     caveats: [
       'Extracted from a single page at one viewport. Sample more pages for a fuller system.',
@@ -1692,6 +1808,19 @@ function buildBrief(card) {
       const ratio = layout.ratio && layout.ratio !== 1 ? `, ratio ${layout.ratio}` : '';
       lines.push(
         `- **${layout.type}** — ${shape}, ${layout.childCount} children${ratio} (\`${layout.selector}\`)`,
+      );
+    }
+    lines.push('');
+  }
+
+  if (card.layoutRecipes.length > 0) {
+    lines.push('## Layout recipes');
+    lines.push('');
+    for (const recipe of card.layoutRecipes) {
+      const ratio = recipe.ratio ? `, ratio ${recipe.ratio}` : '';
+      const columns = recipe.columns ? `, ${recipe.columns} columns` : '';
+      lines.push(
+        `- **${recipe.type}** → \`${recipe.slideLayout}\`${ratio}${columns} — ${recipe.notes}`,
       );
     }
     lines.push('');
@@ -1899,6 +2028,13 @@ function buildSampleCss(card) {
   const accent = card.palette?.accent ?? '#d3a4ff';
   const lines = ['', '/* Sample-only motif + motion styles. Not part of the reusable theme. */'];
 
+  function glowRules(selector, strength) {
+    return [
+      `${selector}::before { content: ""; position: absolute; width: 560px; height: 560px; right: -140px; top: -180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ${accent} ${strength}%, transparent), transparent 70%); filter: blur(32px); }`,
+      `${selector}::after { content: ""; position: absolute; width: 340px; height: 340px; left: -120px; bottom: -160px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ${accent} ${Math.max(2, Math.round(strength / 2))}%, transparent), transparent 72%); filter: blur(36px); }`,
+    ];
+  }
+
   if (
     types.has('gradient') ||
     types.has('pseudo-gradient') ||
@@ -1907,12 +2043,9 @@ function buildSampleCss(card) {
   ) {
     lines.push(
       '.dc-motif { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }',
-      '.dc-motif::before { content: ""; position: absolute; width: 560px; height: 560px; right: -140px; top: -180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ' +
-        accent +
-        ' 20%, transparent), transparent 70%); filter: blur(32px); }',
-      '.dc-motif::after { content: ""; position: absolute; width: 340px; height: 340px; left: -120px; bottom: -160px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ' +
-        accent +
-        ' 10%, transparent), transparent 72%); filter: blur(36px); }',
+      ...glowRules('.dc-motif--faithful', 22),
+      ...glowRules('.dc-motif--translated', 13),
+      ...glowRules('.dc-motif--inspired', 6),
     );
   }
 
@@ -1920,7 +2053,10 @@ function buildSampleCss(card) {
     lines.push(
       '.dc-motif { background-image: radial-gradient(color-mix(in srgb, ' +
         accent +
-        ' 22%, transparent) 1px, transparent 1px); background-size: 24px 24px; opacity: 0.22; }',
+        ' 22%, transparent) 1px, transparent 1px); background-size: 24px 24px; }',
+      '.dc-motif--faithful { opacity: 0.28; }',
+      '.dc-motif--translated { opacity: 0.16; }',
+      '.dc-motif--inspired { opacity: 0.08; }',
     );
   }
 
@@ -2032,7 +2168,84 @@ function sampleMotifs(card) {
   return [...preferred, ...rest].slice(0, 3);
 }
 
-function sampleSlides(card) {
+function buildRecipeSlides(card, direction) {
+  if (direction !== 'faithful') return '';
+
+  const recipes = card.layoutRecipes ?? [];
+  const slides = [];
+  const split = recipes.find((recipe) => recipe.type === 'asymmetric-split' || recipe.type === 'split');
+  if (split) {
+    const ratio =
+      split.ratio === '35/65'
+        ? '0.75fr 1.25fr'
+        : split.ratio === '45/55'
+          ? '0.9fr 1.1fr'
+          : '1fr 1fr';
+    slides.push(`---
+layout: two-cols
+---
+
+# The reference's composition
+
+<div class="cols" style="grid-template-columns: ${ratio}">
+<div class="col-text">
+
+${split.type === 'asymmetric-split'
+  ? 'The reference does not give every element equal weight. Keep the unequal columns and let the larger side carry the evidence.'
+  : 'The reference splits the page into two clear roles: text and evidence. Keep the balance and the gap.'}
+
+<div class="dc-rule"></div>
+
+**${split.type}** · ratio ${split.ratio ?? '50/50'}
+
+</div>
+<div class="col-media">
+<div class="placeholder">${split.type === 'asymmetric-split' ? 'Asymmetric visual' : 'Reference composition'}</div>
+</div>
+</div>
+
+<!--
+Layout recipe: ${split.notes}
+-->`);
+  }
+
+  const steps = recipes.find((recipe) => recipe.type === 'steps');
+  if (steps) {
+    slides.push(`---
+layout: timeline
+---
+
+# A sequence from the reference
+
+<div class="timeline-steps">
+  <div class="step active">
+    <div class="step-dot"></div>
+    <div class="step-title">Observe</div>
+    <div class="step-desc">Start with the evidence.</div>
+    <div class="step-line"></div>
+  </div>
+  <div class="step active">
+    <div class="step-dot"></div>
+    <div class="step-title">Compose</div>
+    <div class="step-desc">Give each idea its own frame.</div>
+    <div class="step-line"></div>
+  </div>
+  <div class="step">
+    <div class="step-dot"></div>
+    <div class="step-title">Land</div>
+    <div class="step-desc">Close the loop.</div>
+  </div>
+</div>
+
+<!--
+Layout recipe: ${steps.notes}
+-->`);
+  }
+
+  return slides.join('\n\n');
+}
+
+function sampleSlides(card, direction = 'translated') {
   const host = new URL(card.source.url).hostname;
   const motifs = sampleMotifs(card);
   const motifCards = motifs
@@ -2045,6 +2258,18 @@ function sampleSlides(card) {
     )
     .join('\n');
 
+  const gridRecipe = (card.layoutRecipes ?? []).find(
+    (recipe) => recipe.type === 'grid' || recipe.type === 'bento',
+  );
+  const gridColumns = Math.min(Math.max(gridRecipe?.columns || 3, 2), 4);
+  const gridStyle =
+    direction === 'inspired'
+      ? 'grid-template-columns: repeat(3, minmax(0, 1fr));'
+      : direction === 'faithful' && gridRecipe?.type === 'bento'
+        ? 'grid-template-columns: 1.25fr 0.9fr 0.9fr;'
+        : `grid-template-columns: repeat(${gridColumns}, minmax(0, 1fr));`;
+  const recipeSlides = buildRecipeSlides(card, direction);
+
   return `---
 theme: ./theme
 highlighter: shiki
@@ -2054,13 +2279,13 @@ layout: cover
 colorSchema: ${card.mode.theme}
 ---
 
-<div class="dc-motif" aria-hidden="true"></div>
+<div class="dc-motif dc-motif--${direction}" aria-hidden="true"></div>
 
 <h1 class="dc-reveal">The shape of a good idea</h1>
 
 <p class="dc-reveal dc-delay-1">A sample deck rendered with the extracted style from ${host}</p>
 
-<p class="author dc-reveal dc-delay-2">Deckcraft · style import</p>
+<p class="author dc-reveal dc-delay-2">Deckcraft · ${direction}</p>
 
 <!--
 This deck exists to test the generated theme.
@@ -2123,13 +2348,15 @@ function render(slide: Slide) {
 Split layout: code on one side, context on the other.
 -->
 
----
+${recipeSlides}
+
+${recipeSlides ? '\n' : ''}---
 layout: content
 ---
 
 # The reference's visual grammar
 
-<div class="grid-3">
+<div class="grid-3" style="${gridStyle}">
 ${motifCards}
 </div>
 
@@ -2213,7 +2440,7 @@ layout: content
 Paste a URL into Deckcraft, pick the direction that feels right, and replace this sample with your story.
 
 ~~~bash
-npm run style -- https://example.com --out ./style --preview
+npm run style -- https://example.com --out ./style --preview --directions
 ~~~
 
 <!--
@@ -2223,7 +2450,7 @@ Source: ${card.source.url}
 `;
 }
 
-function sampleReadme(card) {
+function sampleReadme(card, hasDirections = false) {
   return `# Sample deck
 
 Generated from ${card.source.url} by \`deckcraft-style --preview\`.
@@ -2236,6 +2463,20 @@ This sample deck exercises the cover, content, split, comparison, quote, and imp
 npx @slidev/cli slides.md
 \`\`\`
 
+${hasDirections ? `## Directions
+
+\`slides.md\` is the translated direction. Three alternatives are also included:
+
+\`\`\`bash
+npx @slidev/cli faithful.md
+npx @slidev/cli translated.md
+npx @slidev/cli inspired.md
+\`\`\`
+
+- **Faithful** — follows the reference layout recipes and motif intensity most closely.
+- **Translated** — same language, normalized for projection.
+- **Inspired** — keeps the palette, type, and motifs but uses Deckcraft's default composition.
+` : ''}
 Then open the local Slidev URL and flip through the slides.
 
 ## What to look for
@@ -2252,7 +2493,7 @@ The generated theme is intentionally separate from Deckcraft's bundled themes. E
 `;
 }
 
-async function writeSampleDeck(card, outDir, themeCss) {
+async function writeSampleDeck(card, outDir, themeCss, directions = false) {
   const skillDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const sharedDir = path.join(skillDir, 'themes', 'shared');
   const sampleDir = path.join(outDir, 'sample');
@@ -2272,8 +2513,18 @@ async function writeSampleDeck(card, outDir, themeCss) {
     recursive: true,
   });
   await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss + buildSampleCss(card));
-  await fs.writeFile(path.join(sampleDir, 'slides.md'), sampleSlides(card));
-  await fs.writeFile(path.join(sampleDir, 'README.md'), sampleReadme(card));
+  await fs.writeFile(path.join(sampleDir, 'slides.md'), sampleSlides(card, 'translated'));
+
+  if (directions) {
+    for (const direction of ['faithful', 'translated', 'inspired']) {
+      await fs.writeFile(
+        path.join(sampleDir, `${direction}.md`),
+        sampleSlides(card, direction),
+      );
+    }
+  }
+
+  await fs.writeFile(path.join(sampleDir, 'README.md'), sampleReadme(card, directions));
 
   return sampleDir;
 }
@@ -2407,8 +2658,8 @@ async function main() {
     await fs.writeFile(path.join(themeDir, 'README.md'), themeReadme);
 
     let sampleDir = null;
-    if (values.preview) {
-      sampleDir = await writeSampleDeck(card, outDir, themeCss);
+    if (values.preview || values.directions) {
+      sampleDir = await writeSampleDeck(card, outDir, themeCss, values.directions);
     }
 
     console.log('');
@@ -2427,6 +2678,11 @@ async function main() {
     }
     if (sampleDir) {
       console.log(`  ${path.relative(process.cwd(), path.join(sampleDir, 'slides.md'))}`);
+      if (values.directions) {
+        for (const direction of ['faithful', 'translated', 'inspired']) {
+          console.log(`  ${path.relative(process.cwd(), path.join(sampleDir, `${direction}.md`))}`);
+        }
+      }
       console.log('');
       console.log(`Preview: npx @slidev/cli ${path.relative(process.cwd(), path.join(sampleDir, 'slides.md'))}`);
     }

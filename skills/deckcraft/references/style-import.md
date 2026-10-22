@@ -44,6 +44,7 @@ images for human or vision review. It captures:
 - **motifs**: gradients, glows, pseudo-element shapes, rules, patterns, blur, clip shapes
 - **motion**: live animations, keyframes, transitions, JS libraries, scroll-driven elements
 - **layouts**: split, asymmetric split, grid, bento, centered, steps, narrow measure, hero
+- **layout recipes**: detected archetypes mapped to concrete Slidev compositions
 - signature moves and caveats
 
 ---
@@ -73,6 +74,7 @@ Options:
 --wait <ms>         Extra wait after load for client-rendered pages (default: 800)
 --preview           Generate sample/slides.md and a ready-to-run Slidev theme
 --screenshots       Save viewport and full-page reference screenshots
+--directions        Generate faithful, translated, and inspired sample decks
 ```
 
 Requires Node 22+ and Chrome/Chromium. Set `CHROME_PATH` if the browser is not in a
@@ -141,7 +143,21 @@ or hover effects literally; those belong to the website, not the stage.
 grid, bento, centered, steps, narrow measure, hero. Map them to Deckcraft's composition
 family. A website's layout is evidence, not a template.
 
-## What v0.7 should add
+**Layout recipes** turn those archetypes into concrete slide instructions, for example
+`asymmetric-split → two-cols, ratio 45/55`. The sample deck uses them when
+\`--directions\` is enabled.
+
+## Directions
+
+\`--directions\` writes three decks:
+
+- **Faithful** — follows the detected layout recipes and the strongest motif treatment.
+- **Translated** — keeps the language but normalizes type, spacing, and contrast for projection.
+- **Inspired** — keeps palette, type, and motifs, but uses Deckcraft's default composition.
+
+Use this to compare translation choices before committing to one.
+
+## What v0.8 should add
 
 - Vision-assisted brief from the optional screenshots
 - Multi-page sampling (home, product, docs, blog)
