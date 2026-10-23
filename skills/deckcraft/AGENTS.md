@@ -44,9 +44,11 @@ node .claude/skills/deckcraft/tools/style-import.mjs https://example.com --out .
 
 From the Deckcraft source repo, use `npm run style -- https://example.com --out ./style --deck ./deck`.
 
-`--deck` installs the theme and writes `deck/STYLE.md`, which contains the palette,
-layout recipes, motifs, motion guidance, and generation rules. Read `deck/STYLE.md`
-before generating or editing slides. Do not clone logos or proprietary assets.
+`--deck` installs the theme and style kit, and writes `deck/STYLE.md`, which contains
+the palette, layout recipes, motif classes, motion classes, and generation rules.
+Read `deck/STYLE.md` before generating or editing slides. Prefer the installed kit
+classes (`dc-glow`, `dc-reveal`, `dc-recipe-split`, etc.) over inventing new CSS.
+Do not clone logos or proprietary assets.
 
 ## The Signature
 

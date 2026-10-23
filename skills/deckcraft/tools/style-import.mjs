@@ -1852,6 +1852,199 @@ function buildBrief(card) {
   return lines.join('\n');
 }
 
+function buildMotifsCss(card) {
+  const types = new Set(card.motifTypes ?? []);
+  const lines = [
+    '/* Deckcraft style kit — motif utilities generated from the reference. */',
+    '/* Use 2–3 of these, not all of them. */',
+    '',
+  ];
+  const available = [];
+
+  if (
+    types.has('gradient') ||
+    types.has('pseudo-gradient') ||
+    types.has('glow') ||
+    types.has('pseudo-shadow')
+  ) {
+    available.push('.dc-glow');
+    lines.push(
+      '.dc-glow { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; --dc-glow-strength: 18%; --dc-glow-strength-2: 8%; }',
+      '.dc-glow::before { content: ""; position: absolute; width: 560px; height: 560px; right: -140px; top: -180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--c-accent) var(--dc-glow-strength), transparent), transparent 70%); filter: blur(32px); }',
+      '.dc-glow::after { content: ""; position: absolute; width: 340px; height: 340px; left: -120px; bottom: -160px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--c-accent) var(--dc-glow-strength-2), transparent), transparent 72%); filter: blur(36px); }',
+      '.dc-glow--faithful { --dc-glow-strength: 22%; --dc-glow-strength-2: 11%; }',
+      '.dc-glow--translated { --dc-glow-strength: 13%; --dc-glow-strength-2: 6%; }',
+      '.dc-glow--inspired { --dc-glow-strength: 6%; --dc-glow-strength-2: 3%; }',
+      '',
+    );
+  }
+
+  if (types.has('gradient') || types.has('pseudo-gradient')) {
+    available.push('.dc-gradient-field');
+    lines.push(
+      '.dc-gradient-field { background: linear-gradient(135deg, color-mix(in srgb, var(--c-accent) 16%, transparent), transparent 62%); }',
+      '',
+    );
+  }
+
+  if (types.has('pattern') || types.has('image-texture') || types.has('pseudo-image')) {
+    available.push('.dc-grid-pattern');
+    lines.push(
+      '.dc-grid-pattern { position: absolute; inset: 0; pointer-events: none; z-index: 0; background-image: radial-gradient(color-mix(in srgb, var(--c-accent) 22%, transparent) 1px, transparent 1px); background-size: 24px 24px; --dc-pattern-opacity: 0.16; opacity: var(--dc-pattern-opacity); }',
+      '.dc-grid-pattern--faithful { --dc-pattern-opacity: 0.28; }',
+      '.dc-grid-pattern--translated { --dc-pattern-opacity: 0.16; }',
+      '.dc-grid-pattern--inspired { --dc-pattern-opacity: 0.08; }',
+      '',
+    );
+  }
+
+  if (types.has('hairline-rule') || types.has('dashed-rule') || types.has('pseudo-rule')) {
+    available.push('.dc-hairline');
+    lines.push(
+      '.dc-hairline { width: 56px; height: 2px; background: var(--c-accent); margin: 1.25rem 0; }',
+      '',
+    );
+  }
+
+  if (types.has('pill')) {
+    available.push('.dc-pill');
+    lines.push('.dc-pill { border-radius: 9999px; }', '');
+  }
+
+  if (types.has('rounded-corner')) {
+    available.push('.dc-rounded');
+    lines.push('.dc-rounded { border-radius: var(--c-radius-lg); }', '');
+  }
+
+  if (types.has('glass')) {
+    available.push('.dc-glass');
+    lines.push(
+      '.dc-glass { background: var(--c-glass-bg); backdrop-filter: var(--c-glass-blur); -webkit-backdrop-filter: var(--c-glass-blur); border: 1px solid var(--c-card-border); }',
+      '',
+    );
+  }
+
+  if (types.has('border')) {
+    available.push('.dc-frame');
+    lines.push('.dc-frame { border: 1px solid var(--c-border); }', '');
+  }
+
+  if (available.length === 0) {
+    lines.push('/* No strong visual motifs were detected. Keep decoration minimal. */');
+    lines.push('');
+  }
+
+  lines.push(`/* Available motif classes: ${available.join(', ') || 'none'} */`);
+  return lines.join('\n') + '\n';
+}
+
+function buildMotionCss(card) {
+  const animation = (card.motion?.animations ?? []).find(
+    (item) =>
+      typeof item.duration === 'number' &&
+      item.duration > 0 &&
+      item.duration <= 1600 &&
+      !String(item.type).includes('loop'),
+  );
+  const duration = animation?.duration ?? 600;
+  const easing =
+    animation?.easing && animation.easing !== 'linear'
+      ? animation.easing
+      : 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+  return `/* Deckcraft style kit — motion utilities generated from the reference. */
+/* Use reveals for entrance and pacing, not for every bullet. */
+
+:root {
+  --dc-motion-duration: ${duration}ms;
+  --dc-motion-ease: ${easing};
+}
+
+@keyframes dc-reveal {
+  from { opacity: 0; transform: translateY(16px); filter: blur(5px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+.dc-reveal { animation: dc-reveal var(--dc-motion-duration) var(--dc-motion-ease) both; }
+.dc-stagger-1 { animation-delay: 90ms; }
+.dc-stagger-2 { animation-delay: 180ms; }
+.dc-stagger-3 { animation-delay: 270ms; }
+.dc-reveal-soft { animation-duration: calc(var(--dc-motion-duration) * 1.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-reveal,
+  .dc-stagger-1,
+  .dc-stagger-2,
+  .dc-stagger-3,
+  .dc-reveal-soft {
+    animation: none;
+  }
+}
+`;
+}
+
+function buildRecipesCss(card) {
+  const recipes = card.layoutRecipes ?? [];
+  const lines = [
+    '/* Deckcraft style kit — layout recipes generated from the reference. */',
+    '',
+  ];
+  const available = [];
+  const split = recipes.find((recipe) => recipe.type === 'asymmetric-split' || recipe.type === 'split');
+
+  if (split) {
+    const ratio =
+      split.ratio === '35/65'
+        ? '35fr 65fr'
+        : split.ratio === '45/55'
+          ? '45fr 55fr'
+          : '1fr 1fr';
+    available.push('.dc-recipe-split');
+    lines.push(
+      `.two-cols-layout .cols.dc-recipe-split, .split.dc-recipe-split { grid-template-columns: ${ratio}; }`,
+      '',
+    );
+  }
+
+  const grid = recipes.find((recipe) => recipe.type === 'grid' || recipe.type === 'bento');
+  if (grid) {
+    const columns = Math.min(Math.max(grid.columns || 3, 2), 4);
+    const template =
+      grid.type === 'bento'
+        ? '1.25fr 0.9fr 0.9fr'
+        : `repeat(${columns}, minmax(0, 1fr))`;
+    available.push('.dc-recipe-grid');
+    lines.push(`.grid-3.dc-recipe-grid { grid-template-columns: ${template}; }`, '');
+  }
+
+  if (recipes.some((recipe) => recipe.type === 'narrow-measure')) {
+    available.push('.dc-measure');
+    lines.push('.dc-measure { max-width: 58ch; }', '');
+  }
+
+  if (recipes.some((recipe) => recipe.type === 'centered')) {
+    available.push('.dc-centered');
+    lines.push('.dc-centered { margin-inline: auto; text-align: center; }', '');
+  }
+
+  if (available.length === 0) {
+    lines.push('/* No strong page archetypes were detected. Use the bundled compositions. */');
+    lines.push('');
+  }
+
+  lines.push(`/* Available recipe classes: ${available.join(', ') || 'none'} */`);
+  return lines.join('\n') + '\n';
+}
+
+async function writeStyleKit(themeDir, card, themeCss) {
+  await fs.mkdir(themeDir, { recursive: true });
+  await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss);
+  await fs.writeFile(path.join(themeDir, 'motifs.css'), buildMotifsCss(card));
+  await fs.writeFile(path.join(themeDir, 'motion.css'), buildMotionCss(card));
+  await fs.writeFile(path.join(themeDir, 'recipes.css'), buildRecipesCss(card));
+}
+
+
 function buildThemeCss(card) {
   const { palette, typography, surfaces, mode } = card;
   const base = Math.max(16, Number.parseFloat(typography.sizes?.body) || 16);
@@ -1982,6 +2175,9 @@ function buildThemeCss(card) {
   }
 
   lines.push("@import './base.css';");
+  lines.push("@import './motifs.css';");
+  lines.push("@import './motion.css';");
+  lines.push("@import './recipes.css';");
   lines.push('');
   lines.push(rootBlock(light));
 
@@ -1999,9 +2195,12 @@ Copy this directory into your deck's \`theme/\` folder, alongside the shared Dec
 
 \`\`\`text
 deck/theme/
-├── styles.css   ← this generated file
-├── base.css     ← copy from skills/deckcraft/themes/shared/base.css
-├── layouts/     ← copy from skills/deckcraft/themes/shared/layouts/
+├── styles.css    ← tokens + imports
+├── motifs.css    ← generated motif utilities
+├── motion.css    ← generated motion utilities
+├── recipes.css   ← generated layout recipe utilities
+├── base.css      ← copy from skills/deckcraft/themes/shared/base.css
+├── layouts/      ← copy from skills/deckcraft/themes/shared/layouts/
 └── global-bottom.vue
 \`\`\`
 
@@ -2023,75 +2222,6 @@ theme: ./theme
 
 Read \`../style-brief.md\` for the full style card and caveats.
 `;
-}
-
-function buildSampleCss(card) {
-  const types = new Set(card.motifTypes ?? []);
-  const accent = card.palette?.accent ?? '#d3a4ff';
-  const lines = ['', '/* Sample-only motif + motion styles. Not part of the reusable theme. */'];
-
-  function glowRules(selector, strength) {
-    return [
-      `${selector}::before { content: ""; position: absolute; width: 560px; height: 560px; right: -140px; top: -180px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ${accent} ${strength}%, transparent), transparent 70%); filter: blur(32px); }`,
-      `${selector}::after { content: ""; position: absolute; width: 340px; height: 340px; left: -120px; bottom: -160px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, ${accent} ${Math.max(2, Math.round(strength / 2))}%, transparent), transparent 72%); filter: blur(36px); }`,
-    ];
-  }
-
-  if (
-    types.has('gradient') ||
-    types.has('pseudo-gradient') ||
-    types.has('glow') ||
-    types.has('pseudo-shadow')
-  ) {
-    lines.push(
-      '.dc-motif { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }',
-      ...glowRules('.dc-motif--faithful', 22),
-      ...glowRules('.dc-motif--translated', 13),
-      ...glowRules('.dc-motif--inspired', 6),
-    );
-  }
-
-  if (types.has('pattern') || types.has('image-texture') || types.has('pseudo-image')) {
-    lines.push(
-      '.dc-motif { background-image: radial-gradient(color-mix(in srgb, ' +
-        accent +
-        ' 22%, transparent) 1px, transparent 1px); background-size: 24px 24px; }',
-      '.dc-motif--faithful { opacity: 0.28; }',
-      '.dc-motif--translated { opacity: 0.16; }',
-      '.dc-motif--inspired { opacity: 0.08; }',
-    );
-  }
-
-  if (types.has('hairline-rule') || types.has('dashed-rule')) {
-    lines.push(
-      '.dc-rule { width: 56px; height: 2px; background: var(--c-accent); margin: 1.25rem 0; }',
-    );
-  }
-
-  const animation = (card.motion?.animations ?? []).find(
-    (item) =>
-      typeof item.duration === 'number' &&
-      item.duration > 0 &&
-      item.duration <= 1600 &&
-      !String(item.type).includes('loop'),
-  );
-  const duration = animation?.duration ?? 600;
-  const easing =
-    animation?.easing && animation.easing !== 'linear'
-      ? animation.easing
-      : 'cubic-bezier(0.16, 1, 0.3, 1)';
-
-  lines.push(
-    ':root { --dc-motion-duration: ' + duration + 'ms; --dc-motion-ease: ' + easing + '; }',
-    '@keyframes dc-reveal { from { opacity: 0; transform: translateY(16px); filter: blur(5px); } to { opacity: 1; transform: none; filter: blur(0); } }',
-    '.dc-reveal { animation: dc-reveal var(--dc-motion-duration) var(--dc-motion-ease) both; }',
-    '.dc-delay-1 { animation-delay: 90ms; }',
-    '.dc-delay-2 { animation-delay: 180ms; }',
-    '.dc-delay-3 { animation-delay: 270ms; }',
-    '@media (prefers-reduced-motion: reduce) { .dc-reveal { animation: none; } }',
-  );
-
-  return lines.join('\n') + '\n';
 }
 
 const MOTIF_LABELS = {
@@ -2177,26 +2307,20 @@ function buildRecipeSlides(card, direction) {
   const slides = [];
   const split = recipes.find((recipe) => recipe.type === 'asymmetric-split' || recipe.type === 'split');
   if (split) {
-    const ratio =
-      split.ratio === '35/65'
-        ? '0.75fr 1.25fr'
-        : split.ratio === '45/55'
-          ? '0.9fr 1.1fr'
-          : '1fr 1fr';
     slides.push(`---
 layout: two-cols
 ---
 
 # The reference's composition
 
-<div class="cols" style="grid-template-columns: ${ratio}">
+<div class="cols dc-recipe-split">
 <div class="col-text">
 
 ${split.type === 'asymmetric-split'
   ? 'The reference does not give every element equal weight. Keep the unequal columns and let the larger side carry the evidence.'
   : 'The reference splits the page into two clear roles: text and evidence. Keep the balance and the gap.'}
 
-<div class="dc-rule"></div>
+<div class="dc-hairline"></div>
 
 **${split.type}** · ratio ${split.ratio ?? '50/50'}
 
@@ -2252,7 +2376,7 @@ function sampleSlides(card, direction = 'translated') {
   const motifs = sampleMotifs(card);
   const motifCards = motifs
     .map(
-      (motif, index) => `<div class="card dc-reveal dc-delay-${index + 1}">
+      (motif, index) => `<div class="card dc-reveal dc-stagger-${index + 1}">
   <div class="card-tag">motif 0${index + 1}</div>
   <div class="card-title">${motif.label}</div>
   <div class="card-desc">${motif.count === 1 ? 'Pulled from the reference.' : `Seen ${motif.count}× in the reference.`}</div>
@@ -2263,14 +2387,28 @@ function sampleSlides(card, direction = 'translated') {
   const gridRecipe = (card.layoutRecipes ?? []).find(
     (recipe) => recipe.type === 'grid' || recipe.type === 'bento',
   );
-  const gridColumns = Math.min(Math.max(gridRecipe?.columns || 3, 2), 4);
-  const gridStyle =
-    direction === 'inspired'
-      ? 'grid-template-columns: repeat(3, minmax(0, 1fr));'
-      : direction === 'faithful' && gridRecipe?.type === 'bento'
-        ? 'grid-template-columns: 1.25fr 0.9fr 0.9fr;'
-        : `grid-template-columns: repeat(${gridColumns}, minmax(0, 1fr));`;
+  const gridClass = direction !== 'inspired' && gridRecipe ? 'grid-3 dc-recipe-grid' : 'grid-3';
   const recipeSlides = buildRecipeSlides(card, direction);
+  const motifTypes = new Set(card.motifTypes ?? []);
+  const coverMotifs = [];
+  if (
+    motifTypes.has('gradient') ||
+    motifTypes.has('pseudo-gradient') ||
+    motifTypes.has('glow') ||
+    motifTypes.has('pseudo-shadow')
+  ) {
+    coverMotifs.push('dc-glow', `dc-glow--${direction}`);
+  }
+  if (
+    motifTypes.has('pattern') ||
+    motifTypes.has('image-texture') ||
+    motifTypes.has('pseudo-image')
+  ) {
+    coverMotifs.push('dc-grid-pattern', `dc-grid-pattern--${direction}`);
+  }
+  const coverMotif = coverMotifs.length
+    ? `<div class="${coverMotifs.join(' ')}" aria-hidden="true"></div>`
+    : '';
 
   return `---
 theme: ./theme
@@ -2281,13 +2419,13 @@ layout: cover
 colorSchema: ${card.mode.theme}
 ---
 
-<div class="dc-motif dc-motif--${direction}" aria-hidden="true"></div>
+${coverMotif}
 
 <h1 class="dc-reveal">The shape of a good idea</h1>
 
-<p class="dc-reveal dc-delay-1">A sample deck rendered with the extracted style from ${host}</p>
+<p class="dc-reveal dc-stagger-1">A sample deck rendered with the extracted style from ${host}</p>
 
-<p class="author dc-reveal dc-delay-2">Deckcraft · ${direction}</p>
+<p class="author dc-reveal dc-stagger-2">Deckcraft · ${direction}</p>
 
 <!--
 This deck exists to test the generated theme.
@@ -2358,7 +2496,7 @@ layout: content
 
 # The reference's visual grammar
 
-<div class="grid-3" style="${gridStyle}">
+<div class="${gridClass}">
 ${motifCards}
 </div>
 
@@ -2514,7 +2652,7 @@ async function writeSampleDeck(card, outDir, themeCss, directions = false) {
   await fs.cp(path.join(sharedDir, 'layouts'), path.join(themeDir, 'layouts'), {
     recursive: true,
   });
-  await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss + buildSampleCss(card));
+  await writeStyleKit(themeDir, card, themeCss);
   await fs.writeFile(path.join(sampleDir, 'slides.md'), sampleSlides(card, 'translated'));
 
   if (directions) {
@@ -2566,6 +2704,55 @@ function buildDeckStyleGuide(card) {
   lines.push(`- Heading treatment: weight ${typography.headingWeight}, style ${typography.headingStyle}, tracking ${typography.headingTracking}`);
   lines.push('');
 
+  const recipeClass = {
+    'asymmetric-split': '.dc-recipe-split',
+    split: '.dc-recipe-split',
+    grid: '.dc-recipe-grid',
+    bento: '.dc-recipe-grid',
+    'narrow-measure': '.dc-measure',
+    centered: '.dc-centered',
+  };
+  const motifClass = {
+    gradient: '.dc-glow, .dc-gradient-field',
+    'pseudo-gradient': '.dc-glow, .dc-gradient-field',
+    glow: '.dc-glow',
+    'pseudo-shadow': '.dc-glow',
+    pattern: '.dc-grid-pattern',
+    'image-texture': '.dc-grid-pattern',
+    'pseudo-image': '.dc-grid-pattern',
+    'hairline-rule': '.dc-hairline',
+    'dashed-rule': '.dc-hairline',
+    'pseudo-rule': '.dc-hairline',
+    pill: '.dc-pill',
+    'rounded-corner': '.dc-rounded',
+    glass: '.dc-glass',
+    border: '.dc-frame',
+  };
+
+  lines.push('## Style kit');
+  lines.push('');
+  lines.push('The deck theme includes `motifs.css`, `motion.css`, and `recipes.css`. Use these classes instead of inventing new CSS:');
+  lines.push('');
+
+  const availableMotifs = Array.from(
+    new Set(card.motifs.flatMap((motif) => motifClass[motif.type]?.split(', ') ?? [])),
+  ).filter(Boolean);
+  if (availableMotifs.length > 0) {
+    lines.push(`- Motifs: ${availableMotifs.map((name) => `\`${name}\``).join(', ')}`);
+  } else {
+    lines.push('- Motifs: none detected; keep decoration minimal.');
+  }
+  lines.push('- Motion: `.dc-reveal`, plus `.dc-stagger-1`, `.dc-stagger-2`, `.dc-stagger-3` for sequence.');
+  const availableRecipes = Array.from(
+    new Set(card.layoutRecipes.map((recipe) => recipeClass[recipe.type]).filter(Boolean)),
+  );
+  if (availableRecipes.length > 0) {
+    lines.push(`- Recipes: ${availableRecipes.map((name) => `\`${name}\``).join(', ')}`);
+  } else {
+    lines.push('- Recipes: none detected; use the bundled compositions.');
+  }
+  lines.push('');
+
   lines.push('## Layout recipes');
   lines.push('');
   if (card.layoutRecipes.length === 0) {
@@ -2580,7 +2767,8 @@ function buildDeckStyleGuide(card) {
       ]
         .filter(Boolean)
         .join(', ');
-      lines.push(`- **${recipe.type}** → \`${recipe.slideLayout}\`${extras ? ` (${extras})` : ''} — ${recipe.notes}`);
+      const className = recipeClass[recipe.type] ? ` · \`${recipeClass[recipe.type]}\`` : '';
+      lines.push(`- **${recipe.type}** → \`${recipe.slideLayout}\`${extras ? ` (${extras})` : ''}${className} — ${recipe.notes}`);
     }
   }
   lines.push('');
@@ -2593,7 +2781,8 @@ function buildDeckStyleGuide(card) {
     lines.push('The reference uses these visual devices. Use 2–3 of them, not all of them:');
     lines.push('');
     for (const motif of sampleMotifs(card)) {
-      lines.push(`- **${motif.label}** ×${motif.count}`);
+      const classes = motifClass[motif.type];
+      lines.push(`- **${motif.label}** ×${motif.count}${classes ? ` → \`${classes}\`` : ''}`);
     }
   }
   lines.push('');
@@ -2612,6 +2801,7 @@ function buildDeckStyleGuide(card) {
     if (card.motion.libraries.length > 0) {
       lines.push(`- JS libraries detected: ${card.motion.libraries.join(', ')}`);
     }
+    lines.push('- Use `.dc-reveal` for entrance and `.dc-stagger-1/2/3` for sequence.');
   }
   lines.push('');
 
@@ -2657,7 +2847,7 @@ async function applyStyleToDeck(card, themeCss, deckDir) {
   await fs.cp(path.join(sharedDir, 'layouts'), path.join(themeDir, 'layouts'), {
     recursive: true,
   });
-  await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss);
+  await writeStyleKit(themeDir, card, themeCss);
   await fs.writeFile(path.join(deckDir, 'STYLE.md'), buildDeckStyleGuide(card));
 
   return {
@@ -2788,10 +2978,9 @@ async function main() {
     const themeReadme = buildThemeReadme(card);
 
     const themeDir = path.join(outDir, 'theme');
-    await fs.mkdir(themeDir, { recursive: true });
+    await writeStyleKit(themeDir, card, themeCss);
     await fs.writeFile(path.join(outDir, 'style.json'), JSON.stringify(card, null, 2) + '\n');
     await fs.writeFile(path.join(outDir, 'style-brief.md'), brief);
-    await fs.writeFile(path.join(themeDir, 'styles.css'), themeCss);
     await fs.writeFile(path.join(themeDir, 'README.md'), themeReadme);
 
     let sampleDir = null;
@@ -2814,6 +3003,9 @@ async function main() {
     console.log(`  ${path.relative(process.cwd(), path.join(outDir, 'style.json'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(outDir, 'style-brief.md'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'styles.css'))}`);
+    console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'motifs.css'))}`);
+    console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'motion.css'))}`);
+    console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'recipes.css'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'README.md'))}`);
     for (const screenshot of screenshotFiles) {
       console.log(`  ${path.relative(process.cwd(), screenshot)}`);
@@ -2830,6 +3022,9 @@ async function main() {
     }
     if (applied) {
       console.log(`  ${path.relative(process.cwd(), applied.themeDir)}/styles.css`);
+      console.log(`  ${path.relative(process.cwd(), applied.themeDir)}/motifs.css`);
+      console.log(`  ${path.relative(process.cwd(), applied.themeDir)}/motion.css`);
+      console.log(`  ${path.relative(process.cwd(), applied.themeDir)}/recipes.css`);
       console.log(`  ${path.relative(process.cwd(), applied.styleGuide)}`);
       console.log('');
       console.log('Applied to deck. Read STYLE.md before generating or editing slides.');

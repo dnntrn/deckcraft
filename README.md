@@ -66,7 +66,10 @@ style/
 ├── style.json        # tokens, motifs, motion, layouts, DOM geometry
 ├── style-brief.md    # human-readable style card
 ├── theme/
-│   ├── styles.css    # generated Deckcraft theme tokens
+│   ├── styles.css    # generated tokens + imports
+│   ├── motifs.css    # reusable motif classes
+│   ├── motion.css    # reusable motion classes
+│   ├── recipes.css   # reusable layout recipe classes
 │   └── README.md
 ├── reference/        # with --screenshots
 │   ├── viewport.png
@@ -85,8 +88,8 @@ then normalizes them for projection. Add `--screenshots` for reference images an
 faithful, translated, and inspired. The style card also includes layout recipes
 that map detected page archetypes to concrete slide compositions. The generated
 theme preserves the captured color mode; use `--light` or `--dark` to choose.
-Use `--deck ./deck` to install the generated theme and write `deck/STYLE.md` with
-layout recipes, motifs, motion guidance, and generation rules.
+Use `--deck ./deck` to install the generated theme and style kit, and write
+`deck/STYLE.md` with layout recipes, motifs, motion guidance, and generation rules.
 Requires Node 22+ and Chrome/Chromium (`CHROME_PATH` supported).
 
 Style import is opt-in. Deckcraft's normal generation flow still uses bundled

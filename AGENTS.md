@@ -8,7 +8,10 @@ deck/
 ├── STYLE.md            # Imported style guide (optional, from tools/style-import.mjs)
 ├── slides.md           # The deck in Slidev markdown (sli.dev)
 ├── theme/              # Composed theme (shared foundation + chosen theme tokens)
-│   ├── styles.css      # @import base.css + theme tokens + dark mode overrides
+│   ├── styles.css      # @import base.css + theme tokens + kit imports
+│   ├── motifs.css      # Optional generated motif utilities
+│   ├── motion.css      # Optional generated motion utilities
+│   ├── recipes.css     # Optional generated layout recipe utilities
 │   ├── base.css        # Shared structural CSS (from themes/shared/)
 │   ├── global-bottom.vue  # Nav overlay (from themes/shared/)
 │   └── layouts/        # 11 Vue layout components (from themes/shared/layouts/)

@@ -22,7 +22,10 @@ style/
 ├── style.json        # full style card + raw computed samples
 ├── style-brief.md    # human/agent-readable summary
 ├── theme/
-│   ├── styles.css    # Deckcraft token overrides
+│   ├── styles.css    # Deckcraft token overrides + kit imports
+│   ├── motifs.css    # reusable motif classes
+│   ├── motion.css    # reusable motion classes
+│   ├── recipes.css   # reusable layout recipe classes
 │   └── README.md
 ├── reference/        # with --screenshots
 │   ├── viewport.png
@@ -45,6 +48,7 @@ images for human or vision review. It captures:
 - **motion**: live animations, keyframes, transitions, JS libraries, scroll-driven elements
 - **layouts**: split, asymmetric split, grid, bento, centered, steps, narrow measure, hero
 - **layout recipes**: detected archetypes mapped to concrete Slidev compositions
+- **style kit classes**: reusable `.dc-glow`, `.dc-grid-pattern`, `.dc-hairline`, `.dc-reveal`, `.dc-recipe-split`, `.dc-recipe-grid`, `.dc-measure` utilities
 - signature moves and caveats
 
 ---
@@ -91,20 +95,22 @@ standard location.
 npm run style -- https://example.com --out ./style --deck ./deck
 ```
 
-This installs the generated theme at `deck/theme/` and writes `deck/STYLE.md` with:
+This installs the generated theme and style kit at `deck/theme/` and writes
+`deck/STYLE.md` with:
 
 - palette and typography
-- layout recipes
-- motif guidance
-- motion guidance
+- layout recipes and their class names
+- motif classes and usage guidance
+- motion classes and usage guidance
 - generation rules and slide defaults
 
-Read `deck/STYLE.md` before generating or editing slides.
+Read `deck/STYLE.md` before generating or editing slides. Prefer the installed
+classes (`dc-glow`, `dc-reveal`, `dc-recipe-split`, etc.) over inventing new CSS.
 
 ### Manual use
 
 1. Read `style-brief.md` first. It is the design intent.
-2. Copy `style/theme/styles.css` into the deck’s `theme/` directory.
+2. Copy `style/theme/styles.css`, `motifs.css`, `motion.css`, and `recipes.css` into the deck’s `theme/` directory.
 3. Copy the shared foundation alongside it:
    - `skills/deckcraft/themes/shared/base.css` → `deck/theme/base.css`
    - `skills/deckcraft/themes/shared/layouts/*.vue` → `deck/theme/layouts/`
