@@ -12,6 +12,195 @@ Talk to your AI naturally. Get slides that don't look like AI made them.
 "export to PDF"
 ```
 
+## New here? Start with this
+
+Deckcraft does two things:
+
+1. It teaches an AI coding agent how to make a presentation deck.
+2. It can copy the visual style of a website into that deck.
+
+You do not need to understand Slidev, CSS, or design systems to use it. The deck is
+stored as a plain text file (Markdown), and the AI handles the design decisions.
+
+### What you need
+
+- Node.js 22 or newer
+- Google Chrome or Chromium
+- An AI assistant that can edit files in your project, such as Claude Code, Cursor, or OpenCode
+- Slidev to view the slides. You can run it with `npx`, so you do not need to install
+  anything globally.
+
+### 1. Get the Deckcraft repo
+
+```bash
+git clone https://github.com/dnntrn/deckcraft.git
+cd deckcraft
+```
+
+If you only want the AI skill, install it with the commands in [Install](#install).
+The URL style importer lives in this repo, so the steps below assume you are inside
+`deckcraft`.
+
+### 2. Install the AI skill
+
+Pick your agent:
+
+**OpenCode** — add this to `opencode.json`:
+
+```json
+{
+  "plugin": ["deckcraft@git+https://github.com/dnntrn/deckcraft.git"]
+}
+```
+
+**Claude Code or Cursor**:
+
+```bash
+npx skills add dnntrn/deckcraft
+```
+
+Restart your agent after installing.
+
+### 3. Make a folder for your deck
+
+From the Deckcraft repo:
+
+```bash
+mkdir -p deck
+```
+
+This folder will hold your slides and the imported style. You can put it anywhere;
+`deck/` is just the convention.
+
+### 4. Import a style from a website
+
+Pick a website you like and run:
+
+```bash
+npm run style -- https://astro.build \
+  --out ./style \
+  --deck ./deck
+```
+
+This creates:
+
+```text
+deck/
+├── STYLE.md          # how to use this style
+└── theme/            # colors, type, motifs, motion, layout recipes
+```
+
+It does **not** create `slides.md`. That file is your content.
+
+If you only want to look at the style first, add `--directions` and run one of the
+sample decks:
+
+```bash
+npm run style -- https://astro.build \
+  --out ./style \
+  --directions \
+  --screenshots
+
+npx @slidev/cli ./style/sample/faithful.md
+```
+
+The three directions are:
+
+- `faithful.md` — closest to the website
+- `translated.md` — adapted for a projector
+- `inspired.md` — keeps the colors and type, but uses Deckcraft's default layout
+
+### 5. Create `deck/slides.md`
+
+Make a file called `deck/slides.md`:
+
+```markdown
+---
+theme: ./theme
+highlighter: shiki
+lineNumbers: true
+title: My Talk
+layout: cover
+colorSchema: dark
+---
+
+# My Talk
+
+One sentence about the talk.
+
+<p class="author">Your Name · Event</p>
+
+---
+layout: content
+---
+
+# The first claim
+
+- Evidence
+- More evidence
+- The point
+```
+
+Set `colorSchema` to `dark` or `light` to match the style you imported.
+
+### 6. Ask the AI to write the deck
+
+Open the Deckcraft repo in Claude Code, Cursor, or OpenCode and say:
+
+```text
+Read deck/STYLE.md and make me a 15-minute deck about our migration story.
+```
+
+The AI should keep the imported theme and follow the layout recipes, motifs, and
+motion guidance in `STYLE.md`. If it starts choosing a different theme, tell it:
+
+```text
+Use the installed theme. Follow deck/STYLE.md.
+```
+
+### 7. View the deck
+
+```bash
+npx @slidev/cli ./deck/slides.md
+```
+
+Open the URL Slidev prints. Use the arrow keys to move between slides.
+
+### 8. If something goes wrong
+
+**`Cannot find module .../style-import.mjs`**
+
+You are in the wrong folder. Run `cd deckcraft` first.
+
+**`No Chrome/Chromium found`**
+
+Install Google Chrome, or tell Deckcraft where it is:
+
+```bash
+CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  npm run style -- https://astro.build --out ./style --deck ./deck
+```
+
+**Slidev asks to create an entry file**
+
+`slides.md` does not exist yet. Create it using the example above. The style import
+only installs the theme and `STYLE.md`.
+
+**The deck is blank or looks unstyled**
+
+Check that `deck/slides.md` starts with `theme: ./theme`, and that
+`deck/theme/styles.css` exists.
+
+**`npx @slidev/cli` is not available**
+
+Run:
+
+```bash
+npx @slidev/cli@latest ./deck/slides.md
+```
+
+---
+
 ## What it does
 
 Deckcraft teaches your AI coding agent how to design beautiful technical slides.
@@ -81,7 +270,7 @@ style/
     └── inspired.md
 ```
 
-This v0.8 reads the rendered CSSOM and DOM geometry. It captures palette,
+This v0.9 reads the rendered CSSOM and DOM geometry. It captures palette,
 typography, surfaces, density, **motifs, motion, and page-layout archetypes**,
 then normalizes them for projection. Add `--screenshots` for reference images and
 `--preview` for a sample Slidev deck. Add `--directions` for three variants:
