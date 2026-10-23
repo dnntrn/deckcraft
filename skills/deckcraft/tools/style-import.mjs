@@ -21,7 +21,7 @@ import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── CLI ──────────────────────────────────────────────────────────────────
@@ -1247,41 +1247,129 @@ function saturate(hex) {
   return hsl.s;
 }
 
-function normalizeFontStack(stack, generic) {
-  if (!stack) return generic;
-  const lower = stack.toLowerCase();
-  const hasGeneric = /(?:sans-serif|serif|monospace|cursive|fantasy|system-ui|ui-)/.test(lower);
-  return hasGeneric ? stack : `${stack}, ${generic}`;
-}
-
-const GOOGLE_FONTS = new Set([
-  'Inter',
-  'Roboto',
-  'Open Sans',
-  'Lato',
-  'Montserrat',
-  'Source Sans 3',
-  'Source Sans Pro',
-  'IBM Plex Sans',
-  'IBM Plex Mono',
-  'JetBrains Mono',
-  'Space Grotesk',
-  'DM Sans',
-  'Manrope',
-  'Work Sans',
-  'Fira Sans',
-  'Fira Code',
-  'Noto Sans',
-  'Playfair Display',
-  'DM Serif Display',
-  'Merriweather',
-  'Libre Baskerville',
-  'Lora',
-  'Poppins',
-  'Nunito',
-  'Rubik',
-  'Outfit',
+const GOOGLE_FONTS = new Map([
+  ['inter', 'Inter'],
+  ['roboto', 'Roboto'],
+  ['open sans', 'Open Sans'],
+  ['lato', 'Lato'],
+  ['montserrat', 'Montserrat'],
+  ['source sans 3', 'Source Sans 3'],
+  ['source sans pro', 'Source Sans Pro'],
+  ['ibm plex sans', 'IBM Plex Sans'],
+  ['ibm plex serif', 'IBM Plex Serif'],
+  ['ibm plex mono', 'IBM Plex Mono'],
+  ['jetbrains mono', 'JetBrains Mono'],
+  ['space grotesk', 'Space Grotesk'],
+  ['dm sans', 'DM Sans'],
+  ['dm serif display', 'DM Serif Display'],
+  ['dm mono', 'DM Mono'],
+  ['manrope', 'Manrope'],
+  ['work sans', 'Work Sans'],
+  ['fira sans', 'Fira Sans'],
+  ['fira code', 'Fira Code'],
+  ['noto sans', 'Noto Sans'],
+  ['playfair display', 'Playfair Display'],
+  ['merriweather', 'Merriweather'],
+  ['libre baskerville', 'Libre Baskerville'],
+  ['lora', 'Lora'],
+  ['poppins', 'Poppins'],
+  ['nunito', 'Nunito'],
+  ['rubik', 'Rubik'],
+  ['outfit', 'Outfit'],
+  ['archivo', 'Archivo'],
+  ['archivo narrow', 'Archivo Narrow'],
+  ['bricolage grotesque', 'Bricolage Grotesque'],
+  ['figtree', 'Figtree'],
+  ['public sans', 'Public Sans'],
+  ['instrument sans', 'Instrument Sans'],
+  ['instrument serif', 'Instrument Serif'],
+  ['source serif 4', 'Source Serif 4'],
+  ['newsreader', 'Newsreader'],
+  ['fraunces', 'Fraunces'],
+  ['source code pro', 'Source Code Pro'],
+  ['space mono', 'Space Mono'],
+  ['sora', 'Sora'],
+  ['schibsted grotesk', 'Schibsted Grotesk'],
+  ['onest', 'Onest'],
+  ['gabarito', 'Gabarito'],
+  ['bodoni moda', 'Bodoni Moda'],
+  ['cormorant garamond', 'Cormorant Garamond'],
+  ['eb garamond', 'EB Garamond'],
+  ['crimson pro', 'Crimson Pro'],
+  ['literata', 'Literata'],
+  ['spectral', 'Spectral'],
+  ['roboto slab', 'Roboto Slab'],
+  ['zilla slab', 'Zilla Slab'],
+  ['red hat display', 'Red Hat Display'],
+  ['red hat text', 'Red Hat Text'],
+  ['red hat mono', 'Red Hat Mono'],
+  ['inconsolata', 'Inconsolata'],
+  ['anonymous pro', 'Anonymous Pro'],
+  ['victor mono', 'Victor Mono'],
+  ['azeret mono', 'Azeret Mono'],
+  ['martian mono', 'Martian Mono'],
 ]);
+
+const SYSTEM_FONTS = new Set([
+  'system-ui',
+  '-apple-system',
+  'blinkmacsystemfont',
+  'segoe ui',
+  'roboto',
+  'helvetica',
+  'helvetica neue',
+  'arial',
+  'georgia',
+  'times new roman',
+  'times',
+  'menlo',
+  'monaco',
+  'consolas',
+  'courier new',
+  'ui-monospace',
+  'sfmono-regular',
+  'liberation mono',
+  'sans-serif',
+  'serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+]);
+
+const GENERIC_ONLY = new Set(['sans-serif', 'serif', 'monospace', 'cursive', 'fantasy']);
+
+const FONT_SUBSTITUTES = {
+  obviously: 'Space Grotesk',
+  'gt america': 'Inter',
+  'gt america mono': 'JetBrains Mono',
+  circular: 'Manrope',
+  'circular std': 'Manrope',
+  'söhne': 'Inter',
+  sohne: 'Inter',
+  'söhne mono': 'JetBrains Mono',
+  'sohne mono': 'JetBrains Mono',
+  graphik: 'Inter',
+  'suisse intl': 'Inter',
+  suisse: 'Inter',
+  'untitled sans': 'Inter',
+  'neue montreal': 'Space Grotesk',
+  'founders grotesk': 'Archivo',
+  aeonik: 'Manrope',
+  'basel grotesk': 'Inter',
+  'abc diatype': 'Inter',
+  'neue haas grotesk': 'Inter',
+  canela: 'Fraunces',
+  'gt super': 'Newsreader',
+  'tiempos headline': 'Source Serif 4',
+  'tiempos text': 'Source Serif 4',
+  reckless: 'Fraunces',
+  editor: 'Newsreader',
+  'freight display': 'Playfair Display',
+  'domaine display': 'Fraunces',
+  ogg: 'Instrument Serif',
+  'berkeley mono': 'JetBrains Mono',
+  'gt pressura mono': 'IBM Plex Mono',
+};
 
 function fontFamilies(stack) {
   return String(stack || '')
@@ -1290,9 +1378,92 @@ function fontFamilies(stack) {
     .filter(Boolean);
 }
 
+function classifyFont(family, role) {
+  const value = String(family || '').toLowerCase();
+  if (/mono|code|courier|consolas|menlo|monaco/.test(value)) return 'mono';
+  if (
+    /serif|slab|garamond|baskerville|playfair|lora|times|georgia|tiempos|reckless|canela|ogg|fraunces|newsreader|literata|spectral|merriweather|source serif|libertine|libre/.test(
+      value,
+    )
+  ) {
+    return 'serif';
+  }
+  return 'sans';
+}
+
+function chooseSubstitute(role, family, category) {
+  const mapped = FONT_SUBSTITUTES[String(family || '').toLowerCase()];
+  if (mapped) return mapped;
+  if (category === 'mono') return 'JetBrains Mono';
+  if (category === 'serif') return role === 'display' ? 'Newsreader' : 'Source Serif 4';
+  return role === 'display' ? 'Space Grotesk' : 'Inter';
+}
+
+function resolveFont(role, stack) {
+  const families = fontFamilies(stack);
+  const primary = families.find((family) => !GENERIC_ONLY.has(family.toLowerCase())) || '';
+  const category = classifyFont(primary, role);
+  const lower = primary.toLowerCase();
+  const isGoogle = GOOGLE_FONTS.has(lower);
+  const isSystem = SYSTEM_FONTS.has(lower);
+  const generic = category === 'mono' ? 'monospace' : category === 'serif' ? 'serif' : 'sans-serif';
+
+  let resolvedFamilies = families.filter((family) => !/-fallback$/i.test(family));
+
+  if (!primary || isGoogle || isSystem) {
+    if (!resolvedFamilies.some((family) => new RegExp(`(?:${generic}|system-ui|ui-)`, 'i').test(family))) {
+      resolvedFamilies.push(generic);
+    }
+    return {
+      role,
+      detected: primary || 'system default',
+      detectedStack: stack || '',
+      resolvedStack: resolvedFamilies.join(', '),
+      substitute: null,
+      category,
+      reason: !primary ? 'system default' : isGoogle ? 'open-source font' : 'system font',
+      confidence: 'high',
+    };
+  }
+
+  const substitute = chooseSubstitute(role, primary, category);
+  resolvedFamilies = [substitute, ...resolvedFamilies.filter((family) => family.toLowerCase() !== lower)];
+  if (!resolvedFamilies.some((family) => new RegExp(`(?:${generic}|system-ui|ui-)`, 'i').test(family))) {
+    resolvedFamilies.push(generic);
+  }
+
+  return {
+    role,
+    detected: primary,
+    detectedStack: stack || '',
+    resolvedStack: resolvedFamilies.join(', '),
+    substitute,
+    category,
+    reason: `commercial or unavailable font; substituted with ${substitute}`,
+    confidence: FONT_SUBSTITUTES[lower] ? 'medium' : 'low',
+  };
+}
+
+function buildFontPlan(typography) {
+  const display = resolveFont('display', typography?.displayFamily);
+  const body = resolveFont('body', typography?.bodyFamily);
+  const mono = resolveFont('mono', typography?.monoFamily);
+  return {
+    display,
+    body,
+    mono,
+    substitutions: [display, body, mono].filter((font) => font.substitute),
+  };
+}
+
 function googleFontImport(...stacks) {
   const families = Array.from(
-    new Set(stacks.flatMap((stack) => fontFamilies(stack)).filter((family) => GOOGLE_FONTS.has(family))),
+    new Set(
+      stacks.flatMap((stack) => fontFamilies(stack)).flatMap((family) => {
+        const canonical = GOOGLE_FONTS.get(String(family || '').toLowerCase());
+        return canonical ? [canonical] : [];
+      }),
+    ),
   );
   if (families.length === 0) return null;
 
@@ -1564,6 +1735,7 @@ function buildStyleCard(data) {
   const glassBlur = data.surfaces?.cardBackdropFilter ?? null;
   const shadow = data.surfaces?.cardShadow ?? null;
   const motion = summarizeMotion(data);
+  const fonts = buildFontPlan(data.typography);
   const motifList = data.motifs ?? [];
   const layouts = data.layouts ?? [];
 
@@ -1656,6 +1828,8 @@ function buildStyleCard(data) {
       headingStyle: data.typography?.headingStyle ?? 'normal',
       headingTracking: data.typography?.headingTracking ?? 'normal',
     },
+    fonts,
+    fontSubstitutions: fonts.substitutions,
     composition: {
       contentWidth: data.layout?.contentWidth ?? null,
       textAlign: data.layout?.textAlign ?? 'start',
@@ -1703,7 +1877,7 @@ function buildStyleCard(data) {
       data.canvas?.backgroundImage
         ? 'The reference uses a background image or gradient; the canvas color is an approximation.'
         : null,
-      'Fonts may be commercially licensed. Verify before redistributing or embedding.',
+      'Commercial or unavailable fonts are substituted with open alternatives. Verify the chosen substitutes.',
       'Logos, images, and illustrations are not copied.',
     ].filter(Boolean),
     raw: data,
@@ -1733,9 +1907,9 @@ function buildBrief(card) {
 
   lines.push('## Typography');
   lines.push('');
-  lines.push(`- Display: ${typography.displayFamily}`);
-  lines.push(`- Body: ${typography.bodyFamily}`);
-  lines.push(`- Mono: ${typography.monoFamily}`);
+  lines.push(`- Display: ${card.fonts.display.detected} → ${card.fonts.display.resolvedStack}`);
+  lines.push(`- Body: ${card.fonts.body.detected} → ${card.fonts.body.resolvedStack}`);
+  lines.push(`- Mono: ${card.fonts.mono.detected} → ${card.fonts.mono.resolvedStack}`);
   lines.push(
     `- Headings: ${typography.headingWeight}, ${typography.headingStyle}, tracking ${typography.headingTracking}`,
   );
@@ -1746,6 +1920,15 @@ function buildBrief(card) {
     lines.push(`- Loaded fonts: ${typography.loadedFonts.join(', ')}`);
   }
   lines.push('');
+
+  if (card.fonts.substitutions.length > 0) {
+    lines.push('## Font substitutions');
+    lines.push('');
+    for (const font of card.fonts.substitutions) {
+      lines.push(`- ${font.role}: ${font.detected} → ${font.substitute} (${font.reason})`);
+    }
+    lines.push('');
+  }
 
   if (card.screenshots?.length) {
     lines.push('## Reference screenshots');
@@ -2053,9 +2236,9 @@ function buildThemeCss(card) {
   const h3 = Number.parseFloat(typography.sizes?.h3) || base * 1.15;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  const bodyFamily = normalizeFontStack(typography.bodyFamily, 'system-ui, sans-serif');
-  const displayFamily = normalizeFontStack(typography.displayFamily, 'system-ui, sans-serif');
-  const monoFamily = normalizeFontStack(typography.monoFamily, 'ui-monospace, monospace');
+  const bodyFamily = card.fonts?.body?.resolvedStack || typography.bodyFamily || 'system-ui, sans-serif';
+  const displayFamily = card.fonts?.display?.resolvedStack || typography.displayFamily || bodyFamily;
+  const monoFamily = card.fonts?.mono?.resolvedStack || typography.monoFamily || 'ui-monospace, monospace';
   const headingWeight = Number.parseInt(String(typography.headingWeight), 10) || 600;
   const tracking = typography.headingTracking === 'normal' ? '0' : typography.headingTracking;
 
@@ -2215,9 +2398,10 @@ theme: ./theme
 - Canvas: ${card.palette.canvas}
 - Ink: ${card.palette.foreground}
 - Accent: ${card.palette.accent}
-- Display font: ${card.typography.displayFamily}
-- Body font: ${card.typography.bodyFamily}
-- Density: ${card.mode.density}
+- Display font: ${card.fonts.display.resolvedStack}
+- Body font: ${card.fonts.body.resolvedStack}
+${card.fonts.substitutions.length ? `- Substitutions: ${card.fonts.substitutions.map((font) => `${font.detected} → ${font.substitute}`).join(', ')}
+` : ''}- Density: ${card.mode.density}
 - Surface: ${card.mode.surface}
 
 Read \`../style-brief.md\` for the full style card and caveats.
@@ -2698,11 +2882,20 @@ function buildDeckStyleGuide(card) {
 
   lines.push('## Typography');
   lines.push('');
-  lines.push(`- Display: ${typography.displayFamily}`);
-  lines.push(`- Body: ${typography.bodyFamily}`);
-  lines.push(`- Mono: ${typography.monoFamily}`);
+  lines.push(`- Display: ${card.fonts.display.detected} → ${card.fonts.display.resolvedStack}`);
+  lines.push(`- Body: ${card.fonts.body.detected} → ${card.fonts.body.resolvedStack}`);
+  lines.push(`- Mono: ${card.fonts.mono.detected} → ${card.fonts.mono.resolvedStack}`);
   lines.push(`- Heading treatment: weight ${typography.headingWeight}, style ${typography.headingStyle}, tracking ${typography.headingTracking}`);
   lines.push('');
+
+  if (card.fonts.substitutions.length > 0) {
+    lines.push('## Font substitutions');
+    lines.push('');
+    for (const font of card.fonts.substitutions) {
+      lines.push(`- ${font.role}: ${font.detected} → ${font.substitute} (${font.reason})`);
+    }
+    lines.push('');
+  }
 
   const recipeClass = {
     'asymmetric-split': '.dc-recipe-split',
@@ -2996,8 +3189,14 @@ async function main() {
     console.log('');
     console.log(`Theme: ${card.mode.theme} · ${card.mode.density} · ${card.mode.surface}`);
     console.log(`Canvas ${card.palette.canvas} · Ink ${card.palette.foreground} · Accent ${card.palette.accent}`);
-    console.log(`Display: ${card.typography.displayFamily}`);
-    console.log(`Body: ${card.typography.bodyFamily}`);
+    const displayFont = card.fonts.display.substitute
+      ? `${card.fonts.display.substitute} (was ${card.fonts.display.detected})`
+      : card.fonts.display.detected;
+    const bodyFont = card.fonts.body.substitute
+      ? `${card.fonts.body.substitute} (was ${card.fonts.body.detected})`
+      : card.fonts.body.detected;
+    console.log(`Display: ${displayFont}`);
+    console.log(`Body: ${bodyFont}`);
     console.log('');
     console.log('Wrote:');
     console.log(`  ${path.relative(process.cwd(), path.join(outDir, 'style.json'))}`);

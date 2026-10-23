@@ -19,7 +19,7 @@ and **DOM geometry**, and writes:
 
 ```text
 style/
-├── style.json        # full style card + raw computed samples
+├── style.json        # style card, font plan, motifs, motion, layouts, raw samples
 ├── style-brief.md    # human/agent-readable summary
 ├── theme/
 │   ├── styles.css    # Deckcraft token overrides + kit imports
@@ -41,6 +41,7 @@ images for human or vision review. It captures:
 
 - palette (canvas, ink, muted, border, accent, card, code)
 - font families and heading treatment
+- **font substitutions**: commercial/unavailable fonts mapped to open alternatives
 - type sizes and density
 - surfaces: radius, shadow, glass, borders
 - composition: content width, grid/flex count, media count
@@ -106,6 +107,7 @@ This installs the generated theme and style kit at `deck/theme/` and writes
 
 Read `deck/STYLE.md` before generating or editing slides. Prefer the installed
 classes (`dc-glow`, `dc-reveal`, `dc-recipe-split`, etc.) over inventing new CSS.
+Use the resolved font stack in `STYLE.md`; commercial fonts have already been replaced.
 
 ### Manual use
 
@@ -182,10 +184,23 @@ family. A website's layout is evidence, not a template.
 
 Use this to compare translation choices before committing to one.
 
-## What v0.9 should add
+## Fonts
+
+Deckcraft keeps system fonts and open-source fonts that can be loaded from Google Fonts.
+When the reference uses a commercial or unavailable font, the theme uses an open
+substitute and records it in `style.json` (`fonts` / `fontSubstitutions`),
+`style-brief.md`, and `deck/STYLE.md`.
+
+Examples:
+
+- Obviously → Space Grotesk
+- Linux Libertine → Newsreader
+- Söhne → Inter
+- Berkeley Mono → JetBrains Mono
+
+## What's next
 
 - Multi-page sampling (home, product, docs, blog)
-- Font substitution suggestions with open alternatives
-- Style blending: faithful / translated / inspired as reusable style cards
+- Style blending across multiple references
 - Editable PPTX export
 - A visual select-and-prompt editor over the deck spec

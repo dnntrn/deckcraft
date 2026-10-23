@@ -90,6 +90,9 @@ deck/
 └── theme/            # colors, type, motifs, motion, layout recipes
 ```
 
+If the site uses a commercial font, Deckcraft swaps in a free alternative and records
+the substitution in `STYLE.md`.
+
 It does **not** create `slides.md`. That file is your content.
 
 If you only want to look at the style first, add `--directions` and run one of the
@@ -252,7 +255,7 @@ Output:
 
 ```text
 style/
-├── style.json        # tokens, motifs, motion, layouts, DOM geometry
+├── style.json        # tokens, fonts, motifs, motion, layouts, DOM geometry
 ├── style-brief.md    # human-readable style card
 ├── theme/
 │   ├── styles.css    # generated tokens + imports
@@ -270,8 +273,8 @@ style/
     └── inspired.md
 ```
 
-This v0.9 reads the rendered CSSOM and DOM geometry. It captures palette,
-typography, surfaces, density, **motifs, motion, and page-layout archetypes**,
+This version reads the rendered CSSOM and DOM geometry. It captures palette,
+typography, **font substitutions**, surfaces, density, **motifs, motion, and page-layout archetypes**,
 then normalizes them for projection. Add `--screenshots` for reference images and
 `--preview` for a sample Slidev deck. Add `--directions` for three variants:
 faithful, translated, and inspired. The style card also includes layout recipes

@@ -48,7 +48,9 @@ From the Deckcraft source repo, use `npm run style -- https://example.com --out 
 the palette, layout recipes, motif classes, motion classes, and generation rules.
 Read `deck/STYLE.md` before generating or editing slides. Prefer the installed kit
 classes (`dc-glow`, `dc-reveal`, `dc-recipe-split`, etc.) over inventing new CSS.
-Do not clone logos or proprietary assets.
+Commercial or unavailable fonts are replaced with open alternatives and recorded in
+`STYLE.md`; use the substitute, not the original font name. Do not clone logos or
+proprietary assets.
 
 ## The Signature
 
