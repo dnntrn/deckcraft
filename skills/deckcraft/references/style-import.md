@@ -27,11 +27,17 @@ style/
 │   ├── motion.css    # reusable motion classes
 │   ├── recipes.css   # reusable layout recipe classes
 │   └── README.md
+├── pages/            # per-page extractions (multi-page runs)
+│   ├── 01-site-home.json
+│   └── 01-site-home-brief.md
 ├── reference/        # with --screenshots
 │   ├── viewport.png
 │   └── full-page.png
-└── sample/           # with --preview
-    ├── slides.md
+└── sample/           # with --preview or --directions
+    ├── slides.md     # translated default
+    ├── faithful.md   # with --directions
+    ├── translated.md
+    ├── inspired.md
     ├── README.md
     └── theme/        # generated theme + shared layouts, ready for Slidev
 ```
@@ -73,6 +79,7 @@ Options:
 ```text
 --out <dir>         Output directory (default: ./style)
 --viewport <WxH>    Capture viewport (default: 1440x900)
+--page <url>        Add another page from the same site (repeatable)
 --dark              Emulate prefers-color-scheme: dark
 --light             Emulate prefers-color-scheme: light
 --timeout <ms>      Page load timeout (default: 30000)
@@ -87,6 +94,27 @@ Requires Node 22+ and Chrome/Chromium. Set `CHROME_PATH` if the browser is not i
 standard location.
 
 ---
+
+## Multi-page sampling
+
+One page is often just a hero. Capture the pages that represent the design system:
+
+```bash
+npm run style -- https://astro.build --out ./style \
+  --page https://astro.build/docs \
+  --page https://astro.build/blog \
+  --deck ./deck
+```
+
+Deckcraft merges the pages into one style card:
+
+- colors, fonts, and surfaces that recur across pages win
+- motifs and layouts get page coverage
+- page-specific patterns are marked
+- per-page extractions are written to `style/pages/`
+- screenshots are prefixed per page when `--screenshots` is enabled
+
+The merged deck still uses one theme and one `STYLE.md`.
 
 ## Use the result
 
@@ -200,7 +228,8 @@ Examples:
 
 ## What's next
 
-- Multi-page sampling (home, product, docs, blog)
+- Auto-discover pages from nav instead of listing `--page` manually
 - Style blending across multiple references
+- Image and illustration treatment extraction
 - Editable PPTX export
 - A visual select-and-prompt editor over the deck spec

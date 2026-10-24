@@ -21,7 +21,7 @@ import { spawn } from 'node:child_process';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─── CLI ──────────────────────────────────────────────────────────────────
@@ -31,6 +31,7 @@ const { values, positionals } = parseArgs({
   options: {
     out: { type: 'string', default: './style' },
     viewport: { type: 'string', default: '1440x900' },
+    page: { type: 'string', multiple: true, default: [] },
     dark: { type: 'boolean', default: false },
     light: { type: 'boolean', default: false },
     timeout: { type: 'string', default: '30000' },
@@ -52,6 +53,7 @@ Usage:
 Options:
   --out <dir>         Output directory (default: ./style)
   --viewport <WxH>    Capture viewport (default: 1440x900)
+  --page <url>        Add another page from the same site (repeatable)
   --dark              Emulate prefers-color-scheme: dark
   --light             Emulate prefers-color-scheme: light
   --timeout <ms>      Page load timeout (default: 30000)
@@ -1647,8 +1649,8 @@ function buildLayoutRecipes(layouts) {
       if (layout.type === 'asymmetric-split') {
         return {
           type: layout.type,
-          slideLayout: 'two-cols',
-          composition: 'two-cols',
+          slideLayout: 'asymmetric-split',
+          composition: 'asymmetric-split',
           ratio: layout.ratio >= 2 ? '35/65' : '45/55',
           source: layout.selector,
           notes: 'Preserve the unequal column weight; text and visual do not get equal space.',
@@ -1667,7 +1669,7 @@ function buildLayoutRecipes(layouts) {
       if (layout.type === 'bento' || layout.type === 'grid') {
         return {
           type: layout.type,
-          slideLayout: 'feature-grid',
+          slideLayout: layout.type === 'bento' ? 'bento-grid' : 'feature-grid',
           composition: layout.type,
           columns: Math.min(Math.max(layout.columns || 3, 2), 4),
           source: layout.selector,
@@ -1812,7 +1814,9 @@ function buildStyleCard(data) {
           ? data.surfaces.cardBg.hex
           : mix(canvas, foreground, 0.04),
       cardBorder:
-        data.surfaces?.cardBorder && data.surfaces.cardBorder.a > 0.2
+        data.surfaces?.cardBorder &&
+        data.surfaces.cardBorder.a > 0.2 &&
+        data.surfaces.cardBorder.hex.toLowerCase() !== foreground.toLowerCase()
           ? data.surfaces.cardBorder.hex
           : border,
       codeBg: mix(canvas, foreground, 0.06),
@@ -2184,7 +2188,8 @@ function buildRecipesCss(card) {
           : '1fr 1fr';
     available.push('.dc-recipe-split');
     lines.push(
-      `.two-cols-layout .cols.dc-recipe-split, .split.dc-recipe-split { grid-template-columns: ${ratio}; }`,
+      `.dc-recipe-split { --dc-split-columns: ${ratio}; }`,
+      `.two-cols-layout .cols.dc-recipe-split, .split.dc-recipe-split { grid-template-columns: var(--dc-split-columns); }`,
       '',
     );
   }
@@ -2197,7 +2202,11 @@ function buildRecipesCss(card) {
         ? '1.25fr 0.9fr 0.9fr'
         : `repeat(${columns}, minmax(0, 1fr))`;
     available.push('.dc-recipe-grid');
-    lines.push(`.grid-3.dc-recipe-grid { grid-template-columns: ${template}; }`, '');
+    lines.push(
+      `.dc-recipe-grid { --dc-bento-columns: ${template}; }`,
+      `.grid-3.dc-recipe-grid { grid-template-columns: ${template}; }`,
+      '',
+    );
   }
 
   if (recipes.some((recipe) => recipe.type === 'narrow-measure')) {
@@ -2491,31 +2500,70 @@ function buildRecipeSlides(card, direction) {
   const slides = [];
   const split = recipes.find((recipe) => recipe.type === 'asymmetric-split' || recipe.type === 'split');
   if (split) {
-    slides.push(`---
-layout: two-cols
----
+    const asymmetric = split.type === 'asymmetric-split';
+    const copy = asymmetric
+      ? 'The reference does not give every element equal weight. Keep the unequal columns and let the larger side carry the evidence.'
+      : 'The reference splits the page into two clear roles: text and evidence. Keep the balance and the gap.';
+    const body = `<div class="${asymmetric ? 'split' : 'cols'} dc-recipe-split">
+${asymmetric ? '<div>' : '<div class="col-text">'}
 
-# The reference's composition
-
-<div class="cols dc-recipe-split">
-<div class="col-text">
-
-${split.type === 'asymmetric-split'
-  ? 'The reference does not give every element equal weight. Keep the unequal columns and let the larger side carry the evidence.'
-  : 'The reference splits the page into two clear roles: text and evidence. Keep the balance and the gap.'}
+${copy}
 
 <div class="dc-hairline"></div>
 
 **${split.type}** · ratio ${split.ratio ?? '50/50'}
 
 </div>
-<div class="col-media">
-<div class="placeholder">${split.type === 'asymmetric-split' ? 'Asymmetric visual' : 'Reference composition'}</div>
+${asymmetric ? '<div>' : '<div class="col-media">'}
+<div class="placeholder">${asymmetric ? 'Asymmetric visual' : 'Reference composition'}</div>
 </div>
-</div>
+</div>`;
+
+    slides.push(`---
+layout: ${asymmetric ? 'asymmetric-split' : 'two-cols'}
+---
+
+# The reference's composition
+
+${body}
 
 <!--
 Layout recipe: ${split.notes}
+-->`);
+  }
+
+  const grid = recipes.find((recipe) => recipe.type === 'grid' || recipe.type === 'bento');
+  if (grid) {
+    const motifs = sampleMotifs(card);
+    const items = motifs
+      .map((motif, index) => {
+        if (grid.type === 'bento') {
+          return `<div class="bento-item${index === 0 ? ' bento-wide' : ''}">
+  <div class="card-tag">motif 0${index + 1}</div>
+  <div class="card-title">${motif.label}</div>
+  <div class="card-desc">${motif.count === 1 ? 'Pulled from the reference.' : `Seen ${motif.count}× in the reference.`}</div>
+</div>`;
+        }
+        return `<div class="card">
+  <div class="card-tag">motif 0${index + 1}</div>
+  <div class="card-title">${motif.label}</div>
+  <div class="card-desc">${motif.count === 1 ? 'Pulled from the reference.' : `Seen ${motif.count}× in the reference.`}</div>
+</div>`;
+      })
+      .join('\n');
+
+    slides.push(`---
+layout: ${grid.type === 'bento' ? 'bento-grid' : 'feature-grid'}
+---
+
+# The reference's grid
+
+<div class="${grid.type === 'bento' ? 'bento-grid dc-recipe-grid' : 'grid-3 dc-recipe-grid'}">
+${items}
+</div>
+
+<!--
+Layout recipe: ${grid.notes}
 -->`);
   }
 
@@ -3050,6 +3098,296 @@ async function applyStyleToDeck(card, themeCss, deckDir) {
 }
 
 
+function pageSlug(url, index, total) {
+  const parsed = new URL(url);
+  const host = parsed.hostname.replace(/^www\./, '');
+  const pathPart =
+    parsed.pathname
+      .replace(/^\/$/, 'home')
+      .replace(/[^a-z0-9]+/gi, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 50) || 'home';
+  return `${String(index + 1).padStart(2, '0')}-${host}-${pathPart}`;
+}
+
+function modeValue(values, fallback) {
+  const counts = new Map();
+  for (const value of values) {
+    if (value === undefined || value === null || value === '') continue;
+    const key = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    const current = counts.get(key);
+    counts.set(key, { value, count: (current?.count ?? 0) + 1 });
+  }
+  const best = Array.from(counts.values()).sort((a, b) => b.count - a.count)[0];
+  return best ? best.value : fallback;
+}
+
+function median(values) {
+  const numbers = values.filter((value) => typeof value === 'number' && Number.isFinite(value)).sort((a, b) => a - b);
+  if (numbers.length === 0) return null;
+  const middle = Math.floor(numbers.length / 2);
+  return numbers.length % 2 === 0
+    ? Math.round((numbers[middle - 1] + numbers[middle]) / 2)
+    : Math.round(numbers[middle]);
+}
+
+function uniqueValues(values) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+function mergeFonts(cards) {
+  const pick = (role) => {
+    const list = cards.map((card) => card.fonts?.[role]).filter(Boolean);
+    const detected = modeValue(list.map((font) => font.detected));
+    return list.find((font) => font.detected === detected) || list[0];
+  };
+
+  const display = pick('display');
+  const body = pick('body');
+  const mono = pick('mono');
+  const substitutions = [];
+  const seen = new Set();
+
+  for (const card of cards) {
+    for (const font of card.fonts?.substitutions ?? []) {
+      const key = `${font.role}|${font.detected}|${font.substitute}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      substitutions.push(font);
+    }
+  }
+
+  return { display, body, mono, substitutions };
+}
+
+function mergeTypography(cards, fonts) {
+  const sizes = {};
+  for (const key of ['h1', 'h2', 'h3', 'body', 'small']) {
+    sizes[key] = median(cards.map((card) => card.typography?.sizes?.[key]));
+  }
+
+  return {
+    displayFamily: fonts.display?.detected ?? '',
+    bodyFamily: fonts.body?.detected ?? '',
+    monoFamily: fonts.mono?.detected ?? '',
+    loadedFonts: uniqueValues(cards.flatMap((card) => card.typography?.loadedFonts ?? [])).slice(0, 30),
+    sizes,
+    headingWeight: modeValue(cards.map((card) => card.typography?.headingWeight), '600'),
+    headingStyle: modeValue(cards.map((card) => card.typography?.headingStyle), 'normal'),
+    headingTracking: modeValue(cards.map((card) => card.typography?.headingTracking), 'normal'),
+  };
+}
+
+function mergeComposition(cards) {
+  const sum = (key) => cards.reduce((total, card) => total + (card.composition?.[key] ?? 0), 0);
+  return {
+    contentWidth: median(cards.map((card) => card.composition?.contentWidth)),
+    textAlign: modeValue(cards.map((card) => card.composition?.textAlign), 'start'),
+    gridCount: sum('gridCount'),
+    flexCount: sum('flexCount'),
+    monoCount: sum('monoCount'),
+    borderCount: sum('borderCount'),
+    shadowCount: sum('shadowCount'),
+    radiusCount: sum('radiusCount'),
+    glassCount: sum('glassCount'),
+    imageCount: sum('imageCount'),
+    charsPerViewport: median(cards.map((card) => card.composition?.charsPerViewport)),
+  };
+}
+
+function mergeSurfaces(cards) {
+  const spacings = new Map();
+  for (const card of cards) {
+    for (const entry of card.surfaces?.spacings ?? []) {
+      spacings.set(entry.value, (spacings.get(entry.value) ?? 0) + entry.weight);
+    }
+  }
+
+  return {
+    radius: modeValue(cards.map((card) => card.surfaces?.radius), 0),
+    shadow: modeValue(cards.map((card) => card.surfaces?.shadow), 'none'),
+    glassBlur: modeValue(cards.map((card) => card.surfaces?.glassBlur), 'none'),
+    spacings: Array.from(spacings.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([value, weight]) => ({ value, weight })),
+  };
+}
+
+function mergeMotifs(cards) {
+  const grouped = new Map();
+  for (const card of cards) {
+    for (const motif of card.motifs ?? []) {
+      const key = `${motif.type}|${motif.signature}`;
+      const current = grouped.get(key) || {
+        ...motif,
+        count: 0,
+        pages: new Set(),
+      };
+      current.count += motif.count;
+      current.pages.add(card.source.url);
+      grouped.set(key, current);
+    }
+  }
+
+  return Array.from(grouped.values())
+    .map((motif) => ({
+      type: motif.type,
+      signature: motif.signature,
+      sample: motif.sample,
+      count: motif.count,
+      pages: motif.pages.size,
+    }))
+    .sort((a, b) => b.pages - a.pages || b.count - a.count)
+    .slice(0, 16);
+}
+
+function mergeMotion(cards) {
+  const animations = new Map();
+  const keyframes = new Map();
+  const transitions = new Map();
+  const libraries = new Set();
+  const summary = new Set();
+
+  for (const card of cards) {
+    for (const animation of card.motion?.animations ?? []) {
+      const key = `${animation.type}|${animation.name}|${animation.duration}|${animation.easing}`;
+      const current = animations.get(key) || { ...animation, pages: new Set() };
+      current.pages.add(card.source.url);
+      animations.set(key, current);
+    }
+    for (const keyframe of card.motion?.keyframes ?? []) {
+      if (!keyframes.has(keyframe.name)) keyframes.set(keyframe.name, keyframe);
+    }
+    for (const transition of card.motion?.transitions ?? []) {
+      const key = `${transition.property}|${transition.duration}|${transition.easing}`;
+      const current = transitions.get(key) || { ...transition, count: 0 };
+      current.count += transition.count ?? 1;
+      transitions.set(key, current);
+    }
+    for (const library of card.motion?.libraries ?? []) libraries.add(library);
+    for (const label of card.motion?.summary ?? []) summary.add(label);
+  }
+
+  return {
+    animations: Array.from(animations.values())
+      .map((animation) => ({
+        ...animation,
+        pages: animation.pages.size,
+      }))
+      .slice(0, 12),
+    keyframes: Array.from(keyframes.values()).slice(0, 16),
+    transitions: Array.from(transitions.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8),
+    libraries: Array.from(libraries),
+    scrollDriven: cards.reduce((total, card) => total + (card.motion?.scrollDriven ?? 0), 0),
+    reducedMotion: cards.some((card) => card.motion?.reducedMotion),
+    reducedMotionSupport: cards.some((card) => card.motion?.reducedMotionSupport),
+    summary: Array.from(summary),
+  };
+}
+
+function mergeLayouts(cards) {
+  const grouped = new Map();
+  for (const card of cards) {
+    for (const layout of card.layouts ?? []) {
+      const current = grouped.get(layout.type);
+      const area = (layout.rect?.width ?? 0) * (layout.rect?.height ?? 0);
+      if (!current || area > current.area) {
+        grouped.set(layout.type, {
+          ...layout,
+          area,
+          pages: current?.pages ?? new Set(),
+        });
+      }
+      grouped.get(layout.type).pages.add(card.source.url);
+    }
+  }
+
+  return Array.from(grouped.values())
+    .map(({ area, ...layout }) => ({
+      ...layout,
+      pages: layout.pages.size,
+    }))
+    .sort((a, b) => b.pages - a.pages)
+    .slice(0, 12);
+}
+
+function mergeSignatureMoves(cards) {
+  const counts = new Map();
+  for (const card of cards) {
+    for (const move of card.signatureMoves ?? []) {
+      counts.set(move, (counts.get(move) ?? 0) + 1);
+    }
+  }
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([move]) => move);
+}
+
+function mergeCards(cards) {
+  const base = cards[0];
+  const fonts = mergeFonts(cards);
+  const typography = mergeTypography(cards, fonts);
+  const composition = mergeComposition(cards);
+  const surfaces = mergeSurfaces(cards);
+  const motifs = mergeMotifs(cards);
+  const motion = mergeMotion(cards);
+  const layouts = mergeLayouts(cards);
+  const paletteKeys = ['canvas', 'foreground', 'muted', 'border', 'accent', 'card', 'cardBorder', 'codeBg', 'codeFg'];
+  const palette = Object.fromEntries(
+    paletteKeys.map((key) => [key, modeValue(cards.map((card) => card.palette?.[key]), base.palette[key])]),
+  );
+  const pages = cards.map((card) => ({
+    url: card.source.url,
+    title: card.source.title,
+    capturedAt: card.source.capturedAt,
+    theme: card.mode.theme,
+    screenshot: card.screenshots?.[0] ?? null,
+  }));
+
+  return {
+    version: base.version,
+    tool: base.tool,
+    source: {
+      ...base.source,
+      title: `${base.source.title} (+${cards.length - 1} pages)`,
+      pageCount: cards.length,
+      pages,
+      capturedAt: new Date().toISOString(),
+    },
+    mode: {
+      theme: modeValue(cards.map((card) => card.mode.theme), base.mode.theme),
+      density: modeValue(cards.map((card) => card.mode.density), base.mode.density),
+      surface: modeValue(cards.map((card) => card.mode.surface), base.mode.surface),
+    },
+    palette,
+    fonts,
+    fontSubstitutions: fonts.substitutions,
+    typography,
+    composition,
+    surfaces,
+    motifs,
+    motifTypes: uniqueValues(motifs.map((motif) => motif.type)),
+    motion,
+    layouts,
+    layoutTypes: uniqueValues(layouts.map((layout) => layout.type)),
+    layoutRecipes: buildLayoutRecipes(layouts),
+    signatureMoves: mergeSignatureMoves(cards),
+    caveats: [
+      ...uniqueValues(cards.flatMap((card) => card.caveats ?? [])).filter(
+        (caveat) => !caveat.startsWith('Extracted from a single page'),
+      ),
+      `Merged ${cards.length} pages. Page-specific patterns may be flattened into the site-wide style.`,
+    ],
+    screenshots: cards.flatMap((card) => card.screenshots ?? []),
+    pages,
+  };
+}
+
+
 // ─── Main ─────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -3061,12 +3399,26 @@ async function main() {
     process.exit(1);
   }
 
+  const pageUrls = [
+    targetUrl,
+    ...(Array.isArray(values.page) ? values.page : values.page ? [values.page] : []),
+  ];
+
+  for (const url of pageUrls) {
+    try {
+      const parsed = new URL(url);
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error('Only http(s) URLs are supported.');
+    } catch {
+      console.error(`Invalid page URL: ${url}`);
+      process.exit(1);
+    }
+  }
+
   const port = await getFreePort();
   const profileDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deckcraft-style-'));
   let chrome;
 
   try {
-    console.log(`Reading ${targetUrl} at ${viewportWidth}×${viewportHeight}...`);
     chrome = await launchChrome(executable, port, profileDir);
     const page = await getPageTarget(port);
     const { ws, send } = await connectCdp(page.webSocketDebuggerUrl);
@@ -3088,87 +3440,134 @@ async function main() {
       });
     }
 
-    const navigation = await send('Page.navigate', { url: targetUrl });
-    if (navigation.errorText) {
-      throw new Error(`Navigation failed: ${navigation.errorText}`);
-    }
+    const pageEntries = [];
+    const failedPages = [];
 
-    const loaded = await waitFor(
-      send,
-      "document.readyState === 'complete' && location.href !== 'about:blank'",
-      timeoutMs,
-    );
-    if (!loaded) throw new Error(`Page did not finish loading within ${timeoutMs}ms.`);
-
-    await send('Runtime.evaluate', {
-      expression:
-        'Promise.race([' +
-        'document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve(),' +
-        'new Promise((resolve) => setTimeout(resolve, 3000))' +
-        ']).then(() => true)',
-      returnByValue: true,
-      awaitPromise: true,
-    });
-
-    // Let client-rendered pages settle.
-    if (waitMs > 0) await sleep(waitMs);
-
-    let screenshotFiles = [];
-    if (values.screenshots) {
-      const referenceDir = path.join(outDir, 'reference');
-      await fs.mkdir(referenceDir, { recursive: true });
-
-      const viewportShot = await send('Page.captureScreenshot', {
-        format: 'png',
-        captureBeyondViewport: false,
-      });
-      const viewportPath = path.join(referenceDir, 'viewport.png');
-      await fs.writeFile(viewportPath, Buffer.from(viewportShot.data, 'base64'));
-      screenshotFiles.push(viewportPath);
+    for (let index = 0; index < pageUrls.length; index += 1) {
+      const url = pageUrls[index];
+      const multiple = pageUrls.length > 1;
+      const slug = pageSlug(url, index, pageUrls.length);
+      console.log(
+        `Reading ${url} at ${viewportWidth}×${viewportHeight}${multiple ? ` (${index + 1}/${pageUrls.length})` : ''}...`,
+      );
 
       try {
-        const metrics = await send('Page.getLayoutMetrics');
-        const content = metrics.cssContentSize ?? metrics.contentSize;
-        const width = Math.max(viewportWidth, Math.min(Math.ceil(content.width), 1920));
-        const height = Math.max(viewportHeight, Math.min(Math.ceil(content.height), 12000));
-        const fullShot = await send('Page.captureScreenshot', {
-          format: 'png',
-          captureBeyondViewport: true,
-          clip: { x: 0, y: 0, width, height, scale: 1 },
+        const previous = await send('Runtime.evaluate', {
+          expression: 'location.href',
+          returnByValue: true,
         });
-        const fullPath = path.join(referenceDir, 'full-page.png');
-        await fs.writeFile(fullPath, Buffer.from(fullShot.data, 'base64'));
-        screenshotFiles.push(fullPath);
+        const previousHref = previous.result?.value ?? 'about:blank';
+
+        const navigation = await send('Page.navigate', { url });
+        if (navigation.errorText) {
+          throw new Error(`Navigation failed: ${navigation.errorText}`);
+        }
+
+        const loaded = await waitFor(
+          send,
+          `document.readyState === 'complete' && location.href !== ${JSON.stringify(previousHref)}`,
+          timeoutMs,
+        );
+        if (!loaded) throw new Error(`Page did not finish loading within ${timeoutMs}ms.`);
+
+        await send('Runtime.evaluate', {
+          expression:
+            'Promise.race([' +
+            'document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve(),' +
+            'new Promise((resolve) => setTimeout(resolve, 3000))' +
+            ']).then(() => true)',
+          returnByValue: true,
+          awaitPromise: true,
+        });
+
+        if (waitMs > 0) await sleep(waitMs);
+
+        let screenshotFiles = [];
+        if (values.screenshots) {
+          const referenceDir = path.join(outDir, 'reference');
+          await fs.mkdir(referenceDir, { recursive: true });
+          const prefix = multiple ? `${slug}-` : '';
+
+          const viewportShot = await send('Page.captureScreenshot', {
+            format: 'png',
+            captureBeyondViewport: false,
+          });
+          const viewportPath = path.join(referenceDir, `${prefix}viewport.png`);
+          await fs.writeFile(viewportPath, Buffer.from(viewportShot.data, 'base64'));
+          screenshotFiles.push(viewportPath);
+
+          try {
+            const metrics = await send('Page.getLayoutMetrics');
+            const content = metrics.cssContentSize ?? metrics.contentSize;
+            const width = Math.max(viewportWidth, Math.min(Math.ceil(content.width), 1920));
+            const height = Math.max(viewportHeight, Math.min(Math.ceil(content.height), 12000));
+            const fullShot = await send('Page.captureScreenshot', {
+              format: 'png',
+              captureBeyondViewport: true,
+              clip: { x: 0, y: 0, width, height, scale: 1 },
+            });
+            const fullPath = path.join(referenceDir, `${prefix}full-page.png`);
+            await fs.writeFile(fullPath, Buffer.from(fullShot.data, 'base64'));
+            screenshotFiles.push(fullPath);
+          } catch (error) {
+            console.warn(`Warning: could not capture full-page screenshot for ${url}: ${error.message}`);
+          }
+        }
+
+        const result = await send('Runtime.evaluate', {
+          expression: `(${extractPage.toString()})()`,
+          returnByValue: true,
+          awaitPromise: true,
+          timeout: timeoutMs,
+        });
+
+        if (result.exceptionDetails) {
+          throw new Error(`Extraction failed: ${result.exceptionDetails.text}`);
+        }
+
+        const data = result.result?.value;
+        if (!data?.meta) throw new Error('Extraction returned no data.');
+
+        if ((data.meta.textLength ?? 0) < 20) {
+          console.warn(`Warning: ${url} has very little visible text. It may be client-rendered or blocked.`);
+        }
+
+        const pageCard = buildStyleCard(data);
+        if (screenshotFiles.length > 0) {
+          pageCard.screenshots = screenshotFiles.map((file) => path.relative(outDir, file));
+        }
+
+        pageEntries.push({ slug, card: pageCard });
+        console.log(
+          `  → ${pageCard.mode.theme} · ${pageCard.palette.accent} · ${pageCard.fonts.display.detected}`,
+        );
       } catch (error) {
-        console.warn(`Warning: could not capture full-page screenshot: ${error.message}`);
+        failedPages.push({ url, error: error.message });
+        console.warn(`Warning: could not capture ${url}: ${error.message}`);
       }
     }
 
-    const result = await send('Runtime.evaluate', {
-      expression: `(${extractPage.toString()})()`,
-      returnByValue: true,
-      awaitPromise: true,
-      timeout: timeoutMs,
-    });
-
-    if (result.exceptionDetails) {
-      throw new Error(`Extraction failed: ${result.exceptionDetails.text}`);
+    if (pageEntries.length === 0) {
+      throw new Error('No pages were captured.');
     }
 
-    const data = result.result?.value;
-    if (!data?.meta) throw new Error('Extraction returned no data.');
-
-    if ((data.meta.textLength ?? 0) < 20) {
-      console.warn('Warning: the page has very little visible text. It may be client-rendered or blocked.');
-    }
-
-    const card = buildStyleCard(data);
-    if (screenshotFiles.length > 0) {
-      card.screenshots = screenshotFiles.map((file) => path.relative(outDir, file));
-    }
+    const multiple = pageEntries.length > 1;
+    const card = multiple ? mergeCards(pageEntries.map((entry) => entry.card)) : pageEntries[0].card;
     const brief = buildBrief(card);
     const themeCss = buildThemeCss(card);
     const themeReadme = buildThemeReadme(card);
+
+    const pagesDir = path.join(outDir, 'pages');
+    if (multiple) {
+      await fs.mkdir(pagesDir, { recursive: true });
+      for (const entry of pageEntries) {
+        await fs.writeFile(
+          path.join(pagesDir, `${entry.slug}.json`),
+          JSON.stringify(entry.card, null, 2) + '\n',
+        );
+        await fs.writeFile(path.join(pagesDir, `${entry.slug}-brief.md`), buildBrief(entry.card));
+      }
+    }
 
     const themeDir = path.join(outDir, 'theme');
     await writeStyleKit(themeDir, card, themeCss);
@@ -3188,6 +3587,12 @@ async function main() {
 
     console.log('');
     console.log(`Theme: ${card.mode.theme} · ${card.mode.density} · ${card.mode.surface}`);
+    if (multiple) {
+      console.log(`Pages: ${pageEntries.length} merged`);
+      if (failedPages.length > 0) {
+        console.log(`Failed: ${failedPages.map((failure) => failure.url).join(', ')}`);
+      }
+    }
     console.log(`Canvas ${card.palette.canvas} · Ink ${card.palette.foreground} · Accent ${card.palette.accent}`);
     const displayFont = card.fonts.display.substitute
       ? `${card.fonts.display.substitute} (was ${card.fonts.display.detected})`
@@ -3206,8 +3611,11 @@ async function main() {
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'motion.css'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'recipes.css'))}`);
     console.log(`  ${path.relative(process.cwd(), path.join(themeDir, 'README.md'))}`);
-    for (const screenshot of screenshotFiles) {
-      console.log(`  ${path.relative(process.cwd(), screenshot)}`);
+    if (multiple) {
+      console.log(`  ${path.relative(process.cwd(), pagesDir)}/`);
+    }
+    for (const screenshot of card.screenshots ?? []) {
+      console.log(`  ${path.relative(process.cwd(), path.join(outDir, screenshot))}`);
     }
     if (sampleDir) {
       console.log(`  ${path.relative(process.cwd(), path.join(sampleDir, 'slides.md'))}`);

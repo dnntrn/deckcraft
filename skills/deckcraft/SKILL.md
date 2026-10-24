@@ -38,7 +38,7 @@ A theme is not a skin. It is a personality.
 - **Editorial** — Literary refinement. Space to breathe, elegance in restraint. Playfair Display headings, generous whitespace.
 - **Blush** — Warm sophistication. Soft doesn't mean weak. DM Serif Display italic headings, Montserrat body, rose accents.
 
-All themes share a single structural foundation (`themes/shared/`) — 11 layouts, base CSS, and a 3-tier token contract. Each theme defines only its personality tokens (colors, fonts, heading style, spacing, glass vs solid surfaces). See `themes/shared/tokens.md` for the full contract.
+All themes share a single structural foundation (`themes/shared/`) — 13 layouts, base CSS, and a 3-tier token contract. Each theme defines only its personality tokens (colors, fonts, heading style, spacing, glass vs solid surfaces). See `themes/shared/tokens.md` for the full contract.
 
 Choose with intention. The theme shapes the story.
 
@@ -124,7 +124,7 @@ Once the outline is approved, the craft begins.
 
 4. **Compose theme directory** — If `deck/STYLE.md` exists, the deck already has an imported style. Read it, keep the installed `deck/theme/`, and follow its layout recipes, motifs, and motion guidance. Do not overwrite it with a bundled theme. Otherwise copy shared foundation + chosen theme:
    - `themes/shared/base.css` → `deck/theme/base.css`
-   - `themes/shared/layouts/*.vue` → `deck/theme/layouts/*.vue` (all 11 layouts)
+   - `themes/shared/layouts/*.vue` → `deck/theme/layouts/*.vue` (all 13 layouts)
    - `themes/shared/global-bottom.vue` → `deck/theme/global-bottom.vue`
    - `themes/<chosen>/styles.css` → `deck/theme/styles.css` (rewrite `@import '../shared/base.css'` → `@import './base.css'`)
 
@@ -175,6 +175,8 @@ All slides use custom Vue components with **scoped styles**. UnoCSS cannot inter
 | `timeline` | Process | Roadmaps, steps, deployment pipelines. | .timeline-steps > .step > .step-dot + .step-title + .step-desc |
 | `big-code` | Full-bleed code | When the code IS the content. | .code-header, pre/code, .text-sm |
 | `quote` | Testimonial | Pull-quote with attribution. | blockquote, .attribution > .attribution-name + .attribution-role |
+| `asymmetric-split` | Unequal split | Text + visual with a deliberate 45/55 or 35/65 weight. | .split, .placeholder |
+| `bento-grid` | Mixed grid | 2–4 items with one wide or tall cell. | .bento-grid > .bento-item, .bento-wide, .bento-tall |
 
 ### The Split Pattern
 

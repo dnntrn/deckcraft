@@ -90,6 +90,19 @@ deck/
 └── theme/            # colors, type, motifs, motion, layout recipes
 ```
 
+If you want the style to reflect more than the home page, add more pages:
+
+```bash
+npm run style -- https://astro.build \
+  --page https://astro.build/docs \
+  --page https://astro.build/blog \
+  --out ./style \
+  --deck ./deck
+```
+
+Deckcraft merges the pages into one style and writes per-page reports under
+`style/pages/`.
+
 If the site uses a commercial font, Deckcraft swaps in a free alternative and records
 the substitution in `STYLE.md`.
 
@@ -231,7 +244,7 @@ Pick any design system and a theme template — deckcraft generates the full sli
 - **editorial** — Literary refinement. Playfair Display italic headings, generous whitespace.
 - **system** — Invisible polish. Inter semibold headings, clean surfaces, all-purpose.
 
-All four themes share a single structural foundation (11 layouts + base CSS + token contract). Each theme defines only its personality tokens.
+All four themes share a single structural foundation (13 layouts + base CSS + token contract). Each theme defines only its personality tokens.
 
 Token maps pre-extracted for:
 - "Use Kumo" — Cloudflare's component library
@@ -263,6 +276,7 @@ style/
 │   ├── motion.css    # reusable motion classes
 │   ├── recipes.css   # reusable layout recipe classes
 │   └── README.md
+├── pages/            # per-page extractions (multi-page runs)
 ├── reference/        # with --screenshots
 │   ├── viewport.png
 │   └── full-page.png
@@ -270,7 +284,9 @@ style/
     ├── slides.md
     ├── faithful.md   # with --directions
     ├── translated.md
-    └── inspired.md
+    ├── inspired.md
+    ├── README.md
+    └── theme/
 ```
 
 This version reads the rendered CSSOM and DOM geometry. It captures palette,

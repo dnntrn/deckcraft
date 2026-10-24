@@ -44,6 +44,9 @@ node .claude/skills/deckcraft/tools/style-import.mjs https://example.com --out .
 
 From the Deckcraft source repo, use `npm run style -- https://example.com --out ./style --deck ./deck`.
 
+Add `--page https://example.com/docs` for each additional page you want merged into
+the style. Use pages that represent the system: home, docs, blog, product.
+
 `--deck` installs the theme and style kit, and writes `deck/STYLE.md`, which contains
 the palette, layout recipes, motif classes, motion classes, and generation rules.
 Read `deck/STYLE.md` before generating or editing slides. Prefer the installed kit
@@ -72,7 +75,7 @@ deck/
 │   ├── styles.css     # @import base.css + theme tokens + dark mode
 │   ├── base.css       # Shared structural CSS (from themes/shared/)
 │   ├── global-bottom.vue  # Nav overlay (from themes/shared/)
-│   └── layouts/       # 11 Vue components (from themes/shared/layouts/)
+│   └── layouts/       # 13 Vue components (from themes/shared/layouts/)
 ├── assets/            # Images, diagrams
 └── exports/           # PDF, PPTX, PNG (gitignored)
 ```

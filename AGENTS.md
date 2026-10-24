@@ -14,7 +14,7 @@ deck/
 │   ├── recipes.css     # Optional generated layout recipe utilities
 │   ├── base.css        # Shared structural CSS (from themes/shared/)
 │   ├── global-bottom.vue  # Nav overlay (from themes/shared/)
-│   └── layouts/        # 11 Vue layout components (from themes/shared/layouts/)
+│   └── layouts/        # 13 Vue layout components (from themes/shared/layouts/)
 ├── assets/             # Images, diagrams, screenshots
 └── exports/            # PDF/PPTX output (gitignored)
 ```
@@ -27,7 +27,7 @@ presenter notes. Exportable to PDF/PPTX/static site.
 ### Layout system
 
 Custom Vue components with scoped styles. UnoCSS cannot interfere.
-Eleven layouts:
+Thirteen layouts:
 
 | Layout | Purpose | Key Elements |
 |--------|---------|--------------|
@@ -42,6 +42,8 @@ Eleven layouts:
 | `timeline` | Process/steps | .timeline-steps > .step > .step-dot + .step-title + .step-desc |
 | `big-code` | Full-bleed code | .code-header, pre/code, .text-sm |
 | `quote` | Testimonial | blockquote, .attribution > .attribution-name + .attribution-role |
+| `asymmetric-split` | Unequal split | Text + visual with a deliberate 45/55 or 35/65 weight. | .split, .placeholder |
+| `bento-grid` | Mixed grid | 2–4 items with one wide or tall cell. | .bento-grid > .bento-item, .bento-wide, .bento-tall |
 
 Per-slide `<style scoped>` for one-off styles and diagrams.
 
@@ -59,7 +61,7 @@ Four bundled themes in `skills/deckcraft/themes/`, all support light and dark mo
 - **system** — Polished, invisible. Inter semibold headings. All-purpose.
 - **blush** — Warm, feminine, sophisticated. DM Serif Display italic headings. Montserrat body. Frosted glass cards. Rose accents.
 
-All themes share a single structural foundation (`themes/shared/`): 11 Vue layouts, base CSS, global-bottom nav overlay, and a 3-tier token contract (`themes/shared/tokens.md`). Each theme's `styles.css` defines only its personality tokens (colors, fonts, heading style, glass vs solid surfaces, spacing).
+All themes share a single structural foundation (`themes/shared/`): 13 Vue layouts, base CSS, global-bottom nav overlay, and a 3-tier token contract (`themes/shared/tokens.md`). Each theme's `styles.css` defines only its personality tokens (colors, fonts, heading style, glass vs solid surfaces, spacing).
 
 ### Design system tokens
 
